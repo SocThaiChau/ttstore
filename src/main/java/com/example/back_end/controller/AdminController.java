@@ -20,10 +20,10 @@ public class AdminController {
     private UserService userService;
     private final UserMapper userMapper;
 
-    @GetMapping("/test")
-    public ResponseEntity<String> login(){
-        return ResponseEntity.ok("Authentication and Authorization is succedeed");
-    }
+//    @GetMapping("/test")
+//    public ResponseEntity<String> login(){
+//        return ResponseEntity.ok("Authentication and Authorization is succedeed");
+//    }
 
     @PostMapping("/users/create")
     @PreAuthorize("hasRole('VENDOR')")

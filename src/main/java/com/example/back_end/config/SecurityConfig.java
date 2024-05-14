@@ -27,14 +27,18 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable());
         http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeRequests()
-                .requestMatchers(HttpMethod.OPTIONS, "/**")
-                .permitAll()
-                .and()
-                .csrf(csrf -> csrf.disable())
-                .authorizeRequests()
+                .requestMatchers("/login",
+                        "/send-mail",
+                        "/reset-password",
+                        "/admin/**",
+                        "/api/v1/auth/**"
+                ).permitAll()
+//                .and()
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeRequests()
 //                .requestMatchers(HttpMethod.GET, "/admin/user").hasRole(Roles.VENDOR.name())
-                .requestMatchers("/api/v1/auth/**")
-                .permitAll()
+//                .requestMatchers("/api/v1/auth/**")
+//                .permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .authenticationProvider(authenticationProvider)

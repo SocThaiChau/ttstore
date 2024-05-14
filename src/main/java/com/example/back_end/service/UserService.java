@@ -1,6 +1,7 @@
 package com.example.back_end.service;
 
 import com.example.back_end.config.ConvertToDate;
+import com.example.back_end.exception.NotFoundException;
 import com.example.back_end.model.entity.EmailDetails;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
@@ -85,5 +86,27 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Email not found"));
+    }
+
+    public User getUserByEmail(String email){
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    public User getByEmail(String email){
+        return userRepository.findByEmail(email).orElseThrow(()-> new NotFoundException("Không tìm email: "+ email));
+    }
+
+    public void updateUserPassword(Long id, String password){
+        User oldUser = getUserById(id);
+        if(oldUser == null){
+            throw new NotFoundException("Không tìm thấy người dùng: "+ id);
+        }
+//        oldUser.setPassword(new BCryptPasswordEncoder().encode(password));
+        oldUser.setPassword(password);
+        userRepository.save(oldUser);
+    }
+
+    public User getUserById(Long id){
+        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
     }
 }
