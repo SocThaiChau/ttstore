@@ -106,8 +106,13 @@ public class UserService implements UserDetailsService {
         User exUser = getUserById(id);
         String oldMail = exUser.getEmail();
         String oldPhone = exUser.getPhoneNumber();
+        String oldAvt = exUser.getAvatarUrl();
+        String oldName = exUser.getName();
         exUser.setEmail(user.getEmail());
         exUser.setPhoneNumber(user.getPhoneNumber());
+        exUser.setAvatarUrl(user.getAvatarUrl());
+        exUser.setName(user.getName());
+        
 
         String checkDuplicationEmail = checkDuplicateEmail(exUser);
         String checkDuplicationPhone = checkDuplicatePhone(exUser);
