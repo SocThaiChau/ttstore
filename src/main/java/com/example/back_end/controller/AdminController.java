@@ -34,7 +34,7 @@ public class AdminController {
 
 
     @GetMapping("/user")
-    @PreAuthorize("hasRole('VENDOR')")
+//    @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<?> getAllUser(){
         List<User> userList = userService.findAll();
         return ResponseEntity.ok(userMapper.toUserListDTO(userList));
