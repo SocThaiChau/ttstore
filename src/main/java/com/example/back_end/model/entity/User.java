@@ -101,7 +101,27 @@ public class User implements UserDetails {
                 new SimpleGrantedAuthority("ROLE_"+role.getRoles().name())
         );
     }
+    // Getter và Setter cho các thuộc tính cần chỉnh sửa thông tin cá nhân
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
     @Override
     public String getUsername() {
         return getEmail();
@@ -131,4 +151,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+
 }
