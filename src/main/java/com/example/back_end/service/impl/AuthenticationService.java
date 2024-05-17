@@ -1,4 +1,4 @@
-package com.example.back_end.service;
+package com.example.back_end.service.impl;
 
 import com.example.back_end.auth.JwtService;
 import com.example.back_end.model.entity.User;

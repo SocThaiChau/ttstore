@@ -2,7 +2,7 @@ package com.example.back_end.controller;
 
 import com.example.back_end.model.request.AuthenticationRequest;
 import com.example.back_end.model.response.AuthenticationResponse;
-import com.example.back_end.service.AuthenticationService;
+import com.example.back_end.service.impl.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
