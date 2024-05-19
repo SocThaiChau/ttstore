@@ -1,7 +1,9 @@
 package com.example.back_end.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -73,7 +75,13 @@ public class User implements UserDetails {
 
     @ManyToOne
     @JoinColumn(name = "created_by_user_id")
+    @JsonBackReference
     private User createdBy;
+
+
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<User> createdUsers;
 
     @OneToMany(mappedBy = "addressUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore

@@ -23,11 +23,11 @@ public class UserController {
     private UserService userService;
     @Autowired
     private ProductService productService;
-//    @PutMapping("/{id}")
-//    @ResponseBody
-//    public User updateUser(@RequestBody UserRequest user, @PathVariable Integer id) throws UserException, ExecutionControl.UserException {
-//        return userService.updateUser(user, id);
-//    }
+    @PutMapping("/{id}")
+    @ResponseBody
+    public User updateUser(@RequestBody UserRequest user, @PathVariable Integer id) throws UserException, ExecutionControl.UserException {
+        return userService.updateUser(user, id);
+    }
     @GetMapping("/home")
     public ResponseEntity<ResponseObject> home()
     {
