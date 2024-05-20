@@ -31,25 +31,25 @@ public class Product implements Serializable {
     private String description;
 
     @Column(name = "price")
-    private double price;
+    private Double price;
 
     @Column(name = "promotionalPrice")
-    private double promotionalPrice;
+    private Double promotionalPrice;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "quantityAvailable")
-    private int quantityAvailable;
+    private Integer quantityAvailable;
 
     @Column(name = "numberOfRating")
-    private int numberOfRating;
+    private Integer numberOfRating;
 
     @Column(name = "favoriteCount")
-    private int favoriteCount;
+    private Integer favoriteCount;
 
     @Column(name = "sold")
-    private int sold;
+    private Integer sold;
 
     @Column(name = "isActive")
     private Boolean isActive;
@@ -58,7 +58,7 @@ public class Product implements Serializable {
     private Boolean isSelling;
 
     @Column(name = "rating")
-    private float rating;
+    private Float rating;
 
     @Column(name = "createdBy")
     private String createdBy;

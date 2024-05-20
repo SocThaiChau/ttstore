@@ -25,13 +25,13 @@ public class OrderItem implements Serializable {
     private Long id;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "price")
-    private double price;
+    private Double price;
 
     @Column(name = "subtotal")
-    private double subtotal;
+    private Double subtotal;
 
     @Column(name = "imageUrl")
     private String imageUrl;

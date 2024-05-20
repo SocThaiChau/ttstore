@@ -29,11 +29,15 @@ public class SecurityConfig {
         http.authorizeRequests()
                 .requestMatchers(HttpMethod.GET, "/admin/user").permitAll() // Allow access to /admin/user without authentication
 
+//                .requestMatchers(HttpMethod.GET, "/**")
+//                .permitAll()
+
                 .requestMatchers("/login",
                         "/send-mail",
                         "/reset-password",
                         "/admin/**",
-                        "/api/v1/auth/**"
+                        "/api/v1/auth/**",
+                        "/admin/users/create"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()

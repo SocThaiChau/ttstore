@@ -25,10 +25,10 @@ public class Cart implements Serializable {
     private Long id;
 
     @Column(name = "totalItem")
-    private int totalItem;
+    private Integer totalItem;
 
     @Column(name = "totalPrice")
-    private double totalPrice;
+    private Double totalPrice;
 
     @Column(name = "createdDate")
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")

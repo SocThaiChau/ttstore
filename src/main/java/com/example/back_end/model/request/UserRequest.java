@@ -1,5 +1,6 @@
 package com.example.back_end.model.request;
 
+import com.example.back_end.model.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class UserRequest implements Serializable {
     private String gender;
     private String avatarUrl;
     private String otp;
-    private String createBy;
+    private User createBy;
     private Long createdByUserId;
     private String lastModyfiedBy;
     private Long modifiedByUserId;

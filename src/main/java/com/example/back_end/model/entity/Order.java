@@ -31,7 +31,7 @@ public class Order implements Serializable {
     private String note;
 
     @Column(name = "total")
-    private double total;
+    private Double total;
 
     @Column(name = "isPaidBefore")
     private Boolean isPaidBefore;
@@ -40,7 +40,7 @@ public class Order implements Serializable {
     private String paymentType;
 
     @Column(name = "totalItem")
-    private int totalItem;
+    private Integer totalItem;
 
     @Column(name = "createdBy")
     private String createdBy;
