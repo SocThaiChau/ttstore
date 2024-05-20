@@ -3,7 +3,7 @@ package com.example.back_end.controller;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
-import com.example.back_end.service.UserService;
+import com.example.back_end.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

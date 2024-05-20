@@ -1,13 +1,14 @@
-package com.example.back_end.service;
+package com.example.back_end.service.impl;
 
 import com.example.back_end.config.ConvertToDate;
+import com.example.back_end.exception.UserException;
 import com.example.back_end.model.entity.EmailDetails;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.EmailService;
 import com.example.back_end.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class UserService implements UserDetailsService {
    @Autowired
@@ -85,5 +85,55 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Email not found"));
+    }
+
+    public User getUserById(Integer id) throws UserException {
+        return userRepository.findById(Long.valueOf(id)).orElseThrow(()->new UserException("UserNotFound!"));
+    }
+    public String checkDuplicatePhone(User user){
+        if(userRepository.findByPhoneNumber(user.getPhoneNumber()).isPresent()){
+            return "This phone number is already used by another user!";
+        }
+        return null;
+    }
+    public String checkDuplicateEmail(User user){
+        if(userRepository.findByEmail(user.getEmail()).isPresent()){
+            return "This email is already used by another user!";
+        }
+        return null;
+    }
+    public  User updateUser(UserRequest user , Integer id) throws ExecutionControl.UserException, UserException {
+        User exUser = getUserById(id);
+        String oldMail = exUser.getEmail();
+        String oldPhone = exUser.getPhoneNumber();
+        String oldAvt = exUser.getAvatarUrl();
+        String oldName = exUser.getName();
+        exUser.setEmail(user.getEmail());
+        exUser.setPhoneNumber(user.getPhoneNumber());
+        exUser.setAvatarUrl(user.getAvatarUrl());
+        exUser.setName(user.getName());
+        
+
+        String checkDuplicationEmail = checkDuplicateEmail(exUser);
+        String checkDuplicationPhone = checkDuplicatePhone(exUser);
+//        if(checkDuplication!=null && (!user.getEmail().equals(oldMail)||!user.getPhoneNumber().equals(oldPhone))){
+//            throw new UserException(checkDuplication);
+//        }
+        if(checkDuplicationEmail!=null && !user.getEmail().equals(oldMail)){
+            throw new UserException(checkDuplicationEmail);
+        }
+        if(checkDuplicationPhone!=null && !user.getPhoneNumber().equals(oldPhone)){
+            throw new UserException(checkDuplicationPhone);
+        }
+        try{
+            userRepository.save(exUser);
+        }catch(Exception e){
+            return null;
+        }
+        return exUser;
+    }
+
+    public long getcountUser(){
+        return userRepository.count();
     }
 }

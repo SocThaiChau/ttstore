@@ -33,7 +33,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeRequests()
 //                .requestMatchers(HttpMethod.GET, "/admin/user").hasRole(Roles.VENDOR.name())
-                .requestMatchers("/api/v1/auth/**")
+                .requestMatchers("/**")
+                ///api/v1/auth
                 .permitAll()
                 .anyRequest().authenticated()
                 .and()
