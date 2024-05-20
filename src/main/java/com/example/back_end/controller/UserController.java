@@ -79,5 +79,18 @@ public class UserController {
         }
 
     }
+    @GetMapping("/product/{productID}")
+    ResponseEntity<ResponseObject> getDetailPosition(@PathVariable("productID")Integer id){
+        try{
+            Product product = productService.getSelectedProduct(id);
+            if(product == null){
+                return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message("Position not found").build(),HttpStatus.OK);
+            }
+            return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("SUCCESS").data(product).build(),HttpStatus.OK);
+
+        }catch (Exception exception){
+            return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build(),HttpStatus.OK);
+        }
+    }
 
 }
