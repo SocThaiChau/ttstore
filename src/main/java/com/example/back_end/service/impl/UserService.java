@@ -8,6 +8,7 @@ import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.EmailService;
 import com.example.back_end.repository.UserRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -90,6 +92,7 @@ public class UserService implements UserDetailsService {
     public User getUserById(Integer id) throws UserException {
         return userRepository.findById(Long.valueOf(id)).orElseThrow(()->new UserException("UserNotFound!"));
     }
+
     public String checkDuplicatePhone(User user){
         if(userRepository.findByPhoneNumber(user.getPhoneNumber()).isPresent()){
             return "This phone number is already used by another user!";
@@ -101,6 +104,9 @@ public class UserService implements UserDetailsService {
             return "This email is already used by another user!";
         }
         return null;
+    }
+    public boolean isEnabled(Integer id) throws UserException {
+        return getUserById(id).isEnabled();
     }
     public  User updateUser(UserRequest user , Integer id) throws ExecutionControl.UserException, UserException {
         User exUser = getUserById(id);
@@ -135,5 +141,10 @@ public class UserService implements UserDetailsService {
 
     public long getcountUser(){
         return userRepository.count();
+    }
+
+    public User getUserByEmail(String email) {
+
+        return userRepository.findByEmail(email).orElse(null);
     }
 }
