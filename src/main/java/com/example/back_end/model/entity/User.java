@@ -48,6 +48,11 @@ public class User implements UserDetails {
     @Column(name = "avatarUrl")
     private String avatarUrl;
 
+    @Column(name = "dob")
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date dob;
+
     @Column(name = "otp")
     private String otp;
 

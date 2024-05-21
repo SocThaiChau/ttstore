@@ -2,12 +2,17 @@ package com.example.back_end.service.impl;
 
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.exception.UserException;
+import com.example.back_end.exception.NotFoundException;
 import com.example.back_end.model.entity.EmailDetails;
+import com.example.back_end.model.entity.Role;
+import com.example.back_end.model.entity.Roles;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.EmailService;
+import com.example.back_end.repository.RoleRepository;
 import com.example.back_end.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,16 +26,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class UserService implements UserDetailsService {
    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired
     private UserMapper userMapper;
@@ -63,6 +73,14 @@ public class UserService implements UserDetailsService {
             String password = RandomStringUtils.randomAlphanumeric(8);
             user.setPassword(password);
             user.setCreatedBy(userRepository.findById(userRequest.getCreatedByUserId()).orElse(null));
+
+            Optional<Role> customerRoleOptional = roleRepository.findByRoles(Roles.CUSTOMER);
+            if (customerRoleOptional.isPresent()) {
+                user.setRole(customerRoleOptional.get());
+            } else {
+                return "Role CUSTOMER không tồn tại";
+            }
+
             userRepository.save(user);
 
             EmailDetails emailDetails = new EmailDetails();
@@ -85,6 +103,28 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Email not found"));
+    }
+
+    public User getUserByEmail(String email){
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    public User getByEmail(String email){
+        return userRepository.findByEmail(email).orElseThrow(()-> new NotFoundException("Không tìm email: "+ email));
+    }
+
+    public void updateUserPassword(Long id, String password){
+        User oldUser = getUserById(id);
+        if(oldUser == null){
+            throw new NotFoundException("Không tìm thấy người dùng: "+ id);
+        }
+//        oldUser.setPassword(new BCryptPasswordEncoder().encode(password));
+        oldUser.setPassword(password);
+        userRepository.save(oldUser);
+    }
+
+    public User getUserById(Long id){
+        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
     }
 
     public User getUserById(Integer id) throws UserException {
@@ -112,7 +152,7 @@ public class UserService implements UserDetailsService {
         exUser.setPhoneNumber(user.getPhoneNumber());
         exUser.setAvatarUrl(user.getAvatarUrl());
         exUser.setName(user.getName());
-        
+
 
         String checkDuplicationEmail = checkDuplicateEmail(exUser);
         String checkDuplicationPhone = checkDuplicatePhone(exUser);

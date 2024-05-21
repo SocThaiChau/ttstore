@@ -20,13 +20,13 @@ public class AdminController {
     private UserService userService;
     private final UserMapper userMapper;
 
-    @GetMapping("/test")
-    public ResponseEntity<String> login(){
-        return ResponseEntity.ok("Authentication and Authorization is succedeed");
-    }
+//    @GetMapping("/test")
+//    public ResponseEntity<String> login(){
+//        return ResponseEntity.ok("Authentication and Authorization is succedeed");
+//    }
 
     @PostMapping("/users/create")
-    @PreAuthorize("hasRole('VENDOR')")
+//    @PreAuthorize("hasRole('VENDOR')")
     public String createUser(@RequestBody UserRequest userRequest)
     {
         return userService.createUser(userRequest);
@@ -34,7 +34,7 @@ public class AdminController {
 
 
     @GetMapping("/user")
-    @PreAuthorize("hasRole('VENDOR')")
+//    @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<?> getAllUser(){
         List<User> userList = userService.findAll();
         return ResponseEntity.ok(userMapper.toUserListDTO(userList));
