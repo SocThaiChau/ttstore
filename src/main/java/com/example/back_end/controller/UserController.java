@@ -10,7 +10,9 @@ import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jdk.jshell.spi.ExecutionControl;
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,11 +34,33 @@ public class UserController {
     @Autowired
     private JwtService jwtService;
 
-    @PutMapping("/{id}")
-    @ResponseBody
-    public User updateUser(@RequestBody UserRequest user, @PathVariable Integer id) throws UserException, ExecutionControl.UserException {
-        return userService.updateUser(user, id);
+    @PutMapping("/profile")
+    ResponseEntity<ResponseObject> updateUser(HttpServletRequest request,
+                                              @RequestBody @Valid UserRequest userRequest) throws JSONException, UserException {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("Invalid authorization header.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            String token = authHeader.substring(7);
+            ExtractUser userInfo = new ExtractUser(token, userService, jwtService);
+            if (!userInfo.isEnabled()) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("User is not enabled.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            User user = userService.updateUser(userRequest, Math.toIntExact(userInfo.getUserId()));
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("name", user.getName());
+            data.put("avatar", user.getAvatarUrl());
+            data.put("phoneNumber", user.getPhoneNumber());
+
+            return ResponseEntity.ok(ResponseObject.builder().status("Success").message("Update information successfully!").data(data).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        }
     }
+
 
     @GetMapping("/home")
     public ResponseEntity<ResponseObject> home() {
