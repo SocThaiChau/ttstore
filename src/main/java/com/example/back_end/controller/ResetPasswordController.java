@@ -27,7 +27,7 @@ public class ResetPasswordController {
     private final JwtService jwtService;
 
     @PostMapping("/send-mail")
-    public ResponseEntity<?> processForgotPassword(@RequestParam(value = "email") String email, HttpServletRequest request){
+    public ResponseEntity<?> processForgotPassword(@RequestBody String email, HttpServletRequest request){
         System.out.println("Email: " + email);
         try{
             User user = userService.getUserByEmail(email);
@@ -35,7 +35,7 @@ public class ResetPasswordController {
                 throw new BadCredentialsException("Lỗi khi gửi mail");
             }
             String token = jwtService.generatePasswordResetToken(email);
-            String resetPasswordLink = Utility.CLIENT_SITE_URL + "/user/resetPassword?email="+email+"&token=" + token;
+            String resetPasswordLink = Utility.CLIENT_SITE_URL + "/resetPassword?email="+email+"&token=" + token;
             System.out.println(resetPasswordLink);
             emailDetailsService.sendMail(email, resetPasswordLink);
         } catch (UnsupportedEncodingException | MessagingException ex){
@@ -54,7 +54,7 @@ public class ResetPasswordController {
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam(value ="token") String token,
                                            @RequestParam(value = "email") String email,
-                                           @RequestParam(value = "newPassword") String newPassword){
+                                           @RequestBody String newPassword){
         System.out.println(token);
         System.out.println(email);
         System.out.println("password: " + newPassword);

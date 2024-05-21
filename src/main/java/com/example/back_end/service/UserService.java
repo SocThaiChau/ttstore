@@ -3,10 +3,13 @@ package com.example.back_end.service;
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.exception.NotFoundException;
 import com.example.back_end.model.entity.EmailDetails;
+import com.example.back_end.model.entity.Role;
+import com.example.back_end.model.entity.Roles;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.EmailService;
+import com.example.back_end.repository.RoleRepository;
 import com.example.back_end.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -32,6 +36,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 public class UserService implements UserDetailsService {
    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Autowired
     private UserMapper userMapper;
@@ -64,6 +71,14 @@ public class UserService implements UserDetailsService {
             String password = RandomStringUtils.randomAlphanumeric(8);
             user.setPassword(password);
             user.setCreatedBy(userRepository.findById(userRequest.getCreatedByUserId()).orElse(null));
+
+            Optional<Role> customerRoleOptional = roleRepository.findByRoles(Roles.CUSTOMER);
+            if (customerRoleOptional.isPresent()) {
+                user.setRole(customerRoleOptional.get());
+            } else {
+                return "Role CUSTOMER không tồn tại";
+            }
+
             userRepository.save(user);
 
             EmailDetails emailDetails = new EmailDetails();
