@@ -13,6 +13,7 @@ import com.example.back_end.repository.EmailService;
 import com.example.back_end.repository.RoleRepository;
 import com.example.back_end.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +131,7 @@ public class UserService implements UserDetailsService {
     public User getUserById(Integer id) throws UserException {
         return userRepository.findById(Long.valueOf(id)).orElseThrow(()->new UserException("UserNotFound!"));
     }
+
     public String checkDuplicatePhone(User user){
         if(userRepository.findByPhoneNumber(user.getPhoneNumber()).isPresent()){
             return "This phone number is already used by another user!";
@@ -142,29 +144,16 @@ public class UserService implements UserDetailsService {
         }
         return null;
     }
+    public boolean isEnabled(Integer id) throws UserException {
+        return getUserById(id).isEnabled();
+    }
     public  User updateUser(UserRequest user , Integer id) throws ExecutionControl.UserException, UserException {
         User exUser = getUserById(id);
-        String oldMail = exUser.getEmail();
-        String oldPhone = exUser.getPhoneNumber();
-        String oldAvt = exUser.getAvatarUrl();
-        String oldName = exUser.getName();
-        exUser.setEmail(user.getEmail());
-        exUser.setPhoneNumber(user.getPhoneNumber());
+
         exUser.setAvatarUrl(user.getAvatarUrl());
         exUser.setName(user.getName());
+        exUser.setPhoneNumber(user.getPhoneNumber());
 
-
-        String checkDuplicationEmail = checkDuplicateEmail(exUser);
-        String checkDuplicationPhone = checkDuplicatePhone(exUser);
-//        if(checkDuplication!=null && (!user.getEmail().equals(oldMail)||!user.getPhoneNumber().equals(oldPhone))){
-//            throw new UserException(checkDuplication);
-//        }
-        if(checkDuplicationEmail!=null && !user.getEmail().equals(oldMail)){
-            throw new UserException(checkDuplicationEmail);
-        }
-        if(checkDuplicationPhone!=null && !user.getPhoneNumber().equals(oldPhone)){
-            throw new UserException(checkDuplicationPhone);
-        }
         try{
             userRepository.save(exUser);
         }catch(Exception e){
@@ -172,7 +161,6 @@ public class UserService implements UserDetailsService {
         }
         return exUser;
     }
-
     public long getcountUser(){
         return userRepository.count();
     }
