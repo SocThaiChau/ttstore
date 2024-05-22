@@ -13,5 +13,6 @@ import java.io.Serializable;
 public class AuthenticationResponse implements Serializable {
     private String token;
     private String email;
+    private Long id;
 
 }

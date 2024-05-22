@@ -76,6 +76,8 @@ public class UserMapperImpl implements UserMapper {
         user.setOtpCreateTime(userRequest.getOtpCreateTime());
         user.setCreateDate(userRequest.getCreateDate());
         user.setLastModifiedDate(userRequest.getLastModifiedDate());
+        user.setAddress(userRequest.getAddress());
+        user.setDob(userRequest.getDob());
 
 
         return user;

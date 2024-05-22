@@ -116,4 +116,14 @@ public class UserController {
         }
     }
 
+    @PutMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@RequestBody UserRequest userRequest){
+        return ResponseEntity.ok(userService.updatePassword(userRequest));
+    }
+
+    @GetMapping("/checkPassword")
+    public ResponseEntity<?> checkPassword(){
+        return ResponseEntity.ok(userService.checkPassword());
+    }
+
 }

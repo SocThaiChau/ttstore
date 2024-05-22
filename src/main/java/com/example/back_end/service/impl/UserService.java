@@ -18,6 +18,8 @@ import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -73,7 +75,7 @@ public class UserService implements UserDetailsService {
             user.setCreateDate(createdDate);
             String password = RandomStringUtils.randomAlphanumeric(8);
             user.setPassword(password);
-            user.setCreatedBy(userRepository.findById(userRequest.getCreatedByUserId()).orElse(null));
+            user.setCheckPassword(false);
 
             Optional<Role> customerRoleOptional = roleRepository.findByRoles(Roles.CUSTOMER);
             if (customerRoleOptional.isPresent()) {
@@ -163,5 +165,38 @@ public class UserService implements UserDetailsService {
     }
     public long getcountUser(){
         return userRepository.count();
+    }
+
+    public String updatePassword(UserRequest userRequest) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) authentication.getPrincipal();
+            User oldUser = userRepository.findById(currentUser.getId()).get();
+            oldUser.setPassword(userRequest.getPassword());
+            oldUser.setCheckPassword(true);
+            userRepository.save(oldUser);
+            return "Update password Successfully";
+
+
+        } catch (Exception e) {
+            return "Error while updating password!!!";
+        }
+    }
+
+    public String checkPassword() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) authentication.getPrincipal();
+            User oldUser = userRepository.findById(currentUser.getId()).get();
+
+            if (oldUser.getCheckPassword().equals(false)) {
+                return "";
+            } else {
+                return "Password Checked";
+            }
+
+        } catch (Exception e) {
+            return "Error while updating password!!!";
+        }
     }
 }

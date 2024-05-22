@@ -29,7 +29,6 @@ public class AuthenticationService {
             );
             authenticationManager.authenticate(token);
             session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-//            System.out.println(SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
         }catch (AuthenticationException e){
             throw new RuntimeException("Invalid username/password supplied");
         }
