@@ -29,9 +29,11 @@ public class ExtractUser {
             if (user != null) {
                 this.userId = user.getId();
                 this.isEnabled = true;
+
             }
         } catch (Exception e) {
             throw new UserException("Failed to extract user information from token.", e);
         }
     }
+
 }

@@ -110,8 +110,17 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
-
     private List<Product> favoriteProducts;
+
+    @Getter
+    @ManyToMany
+    @JoinTable(
+            name = "User_FollowedUser",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "followed_user_id")
+    )
+    private List<User> followedUsers;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -171,5 +180,13 @@ public class User implements UserDetails {
 
     public List<Cart> getCartList() {
         return cartList;
+    }
+
+    public List<User> getFollowedUsers() {
+        return followedUsers;
+    }
+
+    public void setFollowedUsers(List<User> followedUsers) {
+        this.followedUsers = followedUsers;
     }
 }
