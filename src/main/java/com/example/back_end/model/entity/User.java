@@ -33,6 +33,7 @@ public class User implements UserDetails {
     @Column(name = "email")
     private String email;
 
+    @Getter
     @Column(name = "name")
     private String name;
 
@@ -103,6 +104,15 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<Cart> cartList;
 
+    @ManyToMany
+    @JoinTable(
+            name = "User_FavoriteProduct",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+
+    private List<Product> favoriteProducts;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(
@@ -125,7 +135,6 @@ public class User implements UserDetails {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
@@ -160,5 +169,7 @@ public class User implements UserDetails {
         return true;
     }
 
-
+    public List<Cart> getCartList() {
+        return cartList;
+    }
 }

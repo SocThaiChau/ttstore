@@ -175,5 +175,105 @@ public class UserController {
         }
     }
 
+    @PostMapping("/favorite/{productId}")
+    public ResponseEntity<ResponseObject> addToFavorites(HttpServletRequest request, @PathVariable("productId") Long productId) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("Invalid authorization header.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            String token = authHeader.substring(7);
+            ExtractUser userInfo = new ExtractUser(token, userService, jwtService);
+            if (!userInfo.isEnabled()) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("User is not enabled.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            // Lấy thông tin người dùng từ token
+            User user = userService.getUserById(Math.toIntExact(userInfo.getUserId()));
+
+            // Kiểm tra xem sản phẩm đã tồn tại trong danh sách yêu thích hay chưa
+            Product product = productService.getSelectedProduct(Math.toIntExact(productId));
+            if (product == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder().status("ERROR").message("Product not found.").build());
+            }
+
+            List<Product> favoriteProducts = user.getFavoriteProducts();
+            if (favoriteProducts.contains(product)) {
+                return ResponseEntity.ok(ResponseObject.builder().status("ERROR").message("Product already in favorites.").build());
+            }
+
+            // Thêm sản phẩm vào danh sách yêu thích của người dùng
+            favoriteProducts.add(product);
+            user.setFavoriteProducts(favoriteProducts);
+            userService.saveUser(user);
+
+            return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").message("Product added to favorites successfully!").build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        }
+    }
+    @DeleteMapping("/favorite/{productId}")
+    public ResponseEntity<ResponseObject> removeFromFavorites(HttpServletRequest request, @PathVariable("productId") Long productId) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("Invalid authorization header.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            String token = authHeader.substring(7);
+            ExtractUser userInfo = new ExtractUser(token, userService, jwtService);
+            if (!userInfo.isEnabled()) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("User is not enabled.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            // Lấy thông tin người dùng từ token
+            User user = userService.getUserById(Math.toIntExact(userInfo.getUserId()));
+
+            // Kiểm tra xem sản phẩm có tồn tại trong danh sách yêu thích hay không
+            Product product = productService.getSelectedProduct(Math.toIntExact(productId));
+            if (product == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder().status("ERROR").message("Product not found.").build());
+            }
+
+            List<Product> favoriteProducts = user.getFavoriteProducts();
+            if (!favoriteProducts.contains(product)) {
+                return ResponseEntity.ok(ResponseObject.builder().status("ERROR").message("Product not found in favorites.").build());
+            }
+
+            // Xóa sản phẩm khỏi danh sách yêu thích của người dùng
+            favoriteProducts.remove(product);
+            user.setFavoriteProducts(favoriteProducts);
+            userService.saveUser(user);
+
+            return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").message("Product removed from favorites successfully!").build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        }
+    }
+    @GetMapping("/favorite")
+    public ResponseEntity<ResponseObject> getFavoriteProducts(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("Invalid authorization header.").build(), HttpStatus.UNAUTHORIZED);
+            }
+
+            String token = authHeader.substring(7);
+            ExtractUser userInfo = new ExtractUser(token, userService, jwtService);
+            if (!userInfo.isEnabled()) {
+                return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("User is not enabled.").build(), HttpStatus.UNAUTHORIZED);
+            }
+            User user = userService.getUserById(Math.toIntExact(userInfo.getUserId()));
+            // Lấy danh sách sản phẩm yêu thích của người dùng
+            List<Product> favoriteProducts = user.getFavoriteProducts();
+
+            return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").data(favoriteProducts).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        }
+
+
+    }
 
 }

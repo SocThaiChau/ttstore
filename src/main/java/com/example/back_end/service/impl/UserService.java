@@ -9,6 +9,7 @@ import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.EmailService;
 import com.example.back_end.repository.UserRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -146,5 +147,15 @@ public class UserService implements UserDetailsService {
     public User getUserByEmail(String email) {
 
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Transactional
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 }
