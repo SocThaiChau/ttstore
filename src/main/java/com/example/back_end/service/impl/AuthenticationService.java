@@ -2,8 +2,10 @@ package com.example.back_end.service.impl;
 
 import com.example.back_end.auth.JwtService;
 import com.example.back_end.model.entity.User;
+import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.AuthenticationRequest;
 import com.example.back_end.model.response.AuthenticationResponse;
+import com.example.back_end.model.response.UserResponse;
 import com.example.back_end.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -20,6 +22,8 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
+
     public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletRequest req){
         HttpSession session = req.getSession(true);
         try{
@@ -37,8 +41,14 @@ public class AuthenticationService {
         AuthenticationResponse authenticateResponse = new AuthenticationResponse();
         authenticateResponse.setToken(token);
         authenticateResponse.setEmail(user.getEmail());
-//        authenticateResponse.setDob(user.getDob());
-//        authenticateResponse.setGender(user.getGender());
+        authenticateResponse.setId(user.getId());
+        authenticateResponse.setName(user.getName());
+        authenticateResponse.setDob(user.getDob());
+        authenticateResponse.setPhoneNumber(user.getPhoneNumber());
+        authenticateResponse.setRole(user.getRole());
+
+        UserResponse userResponse = userMapper.toResponse(user);
+        authenticateResponse.setUserResponse(userResponse);
         return authenticateResponse;
     }
 
