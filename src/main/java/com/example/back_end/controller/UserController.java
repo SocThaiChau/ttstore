@@ -309,5 +309,49 @@ public class UserController {
             return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("Failed to get followed users.").build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @PostMapping("/cart/add")
+    public ResponseEntity<ResponseObject> addToCart(HttpServletRequest request, @RequestBody @Valid AddToCartRequest addToCartRequest) {
+        try {
+            // Xác thực người dùng
+            User user = authenticateUser(request);
 
+            // Lấy hoặc tạo giỏ hàng cho người dùng
+            Cart cart = cartService.getOrCreateCart(user);
+
+            // Kiểm tra xem sản phẩm đã có trong giỏ hàng hay chưa
+            List<CartItem> cartItems = cart.getCartItemList();
+            for (CartItem cartItem : cartItems) {
+                if (cartItem.getProduct().getId().equals(addToCartRequest.getProductId())) {
+                    // Sản phẩm đã có trong giỏ hàng, cập nhật số lượng và tổng giá trị
+                    cartItem.setQuantity(cartItem.getQuantity() + addToCartRequest.getQuantity());
+                    cartItem.setSubtotal(cartItem.getSubtotal() + (addToCartRequest.getQuantity() * cartItem.getPrice()));
+                    cartService.updateCart(cart);
+                    return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").message("Product quantity updated in cart.").build());
+                }
+            }
+
+            // Sản phẩm chưa có trong giỏ hàng, thêm mới vào giỏ hàng
+            Product product = productService.getProductById(Long.valueOf(addToCartRequest.getProductId()));
+            if (product == null) {
+                return ResponseEntity.badRequest().body(ResponseObject.builder().status("ERROR").message("Product not found.").build());
+            }
+
+            CartItem newCartItem = new CartItem();
+            newCartItem.setProduct(product);
+            newCartItem.setQuantity(addToCartRequest.getQuantity());
+            newCartItem.setPrice(product.getPrice());
+            newCartItem.setSubtotal(product.getPrice() * addToCartRequest.getQuantity());
+            newCartItem.setImageUrl(product.getImages().toString());
+            newCartItem.setCart(cart);
+
+            cartItems.add(newCartItem);
+            cartService.updateCart(cart);
+
+            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").message("Product added to cart.").build());
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to add product to cart.").build());
+        }
+    }
 }

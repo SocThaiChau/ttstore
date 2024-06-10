@@ -128,6 +128,11 @@ public class User implements UserDetails {
                 new SimpleGrantedAuthority("ROLE_"+role.getRoles().name())
         );
     }
+
+    @Override
+    public String toString() {
+        return "User [id=" + id + ", username=" + username + ", email=" + email + ", name=" + name + "]";
+    }
     // Getter và Setter cho các thuộc tính cần chỉnh sửa thông tin cá nhân
     public void setName(String name) {
         this.name = name;

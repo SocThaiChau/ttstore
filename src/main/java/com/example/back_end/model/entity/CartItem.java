@@ -37,6 +37,16 @@ public class CartItem implements Serializable {
     @ManyToOne
     @JoinColumn(name = "cart_id")
     private Cart cart;
-
+    @Override
+    public String toString() {
+        return "CartItem{" +
+                "id=" + id +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                ", subtotal=" + subtotal +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", product=" + product +
+                '}';
+    }
 
 }
