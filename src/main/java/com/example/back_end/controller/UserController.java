@@ -3,13 +3,11 @@ package com.example.back_end.controller;
 import com.example.back_end.auth.JwtService;
 import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.UserException;
-import com.example.back_end.model.entity.Cart;
-import com.example.back_end.model.entity.CartItem;
-import com.example.back_end.model.entity.Product;
-import com.example.back_end.model.entity.User;
+import com.example.back_end.model.entity.*;
 import com.example.back_end.model.request.AddToCartRequest;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.CartRepository;
+import com.example.back_end.repository.CategoryRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CartService;
 import com.example.back_end.service.impl.ProductService;
@@ -41,7 +39,8 @@ public class UserController {
     private JwtService jwtService;
     @Autowired
     private CartRepository cartRepository;
-    private
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @PutMapping("/profile")
     ResponseEntity<ResponseObject> updateUser(HttpServletRequest request,
@@ -157,5 +156,24 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
         }
     }
+    @GetMapping("/categories/{categoryId}/products")
+    public ResponseEntity<ResponseObject> getProductsByCategory(@PathVariable("categoryId") Long categoryId) {
+        try {
+            // Tìm kiếm danh mục dựa trên ID
+            Category category = categoryRepository.findById(categoryId).orElse(null);
+            if (category == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder().status("ERROR").message("Category not found.").build());
+            }
+
+            // Lấy danh sách sản phẩm thuộc danh mục
+            List<Product> products = category.getProductList();
+            List<Map<String, Object>> productData = getProductData(products);
+
+            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").data(productData).message("Danh sách sản phẩm theo danh mục thành công!").build());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build());
+        }
+    }
+
 
 }
