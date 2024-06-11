@@ -14,6 +14,7 @@ import com.example.back_end.repository.RoleRepository;
 import com.example.back_end.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -198,5 +199,15 @@ public class UserService implements UserDetailsService {
         } catch (Exception e) {
             return "Error while updating password!!!";
         }
+    }
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Transactional
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 }

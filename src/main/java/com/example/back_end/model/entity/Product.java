@@ -3,7 +3,6 @@ package com.example.back_end.model.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -102,4 +101,10 @@ public class Product implements Serializable {
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CartItem cartItem;
 
+    public void setActive(boolean b) {
+
+    }
+
+    public void setCreateDate(Date createdDate) {
+    }
 }
