@@ -46,8 +46,16 @@ public class User implements UserDetails {
     @Column(name = "gender")
     private String gender;
 
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "avatarUrl")
     private String avatarUrl;
+
+    @Column(name = "dob")
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date dob;
 
     @Column(name = "otp")
     private String otp;
@@ -69,6 +77,10 @@ public class User implements UserDetails {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastModifiedDate;
+
+
+    @Column(name = "checkPassword")
+    private Boolean checkPassword;
 
     @ManyToOne
     @JoinColumn(name = "user_role_id")

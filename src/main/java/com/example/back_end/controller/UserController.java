@@ -14,7 +14,6 @@ import com.example.back_end.service.impl.CartService;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +24,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.*;
 
 @Controller
@@ -310,7 +313,7 @@ public class UserController {
         }
     }
     @PostMapping("/cart/add")
-    public ResponseEntity<ResponseObject> addToCart(HttpServletRequest request, @RequestBody @Valid AddToCartRequest addToCartRequest) {
+    public ResponseEntity<ResponseObject> addToCart(HttpServletRequest request, @RequestBody @Valid AddToCartRequest addToCartRequest) throws UserException {
         try {
             // Xác thực người dùng
             User user = authenticateUser(request);
@@ -335,7 +338,6 @@ public class UserController {
             if (product == null) {
                 return ResponseEntity.badRequest().body(ResponseObject.builder().status("ERROR").message("Product not found.").build());
             }
-
             CartItem newCartItem = new CartItem();
             newCartItem.setProduct(product);
             newCartItem.setQuantity(addToCartRequest.getQuantity());
@@ -354,4 +356,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to add product to cart.").build());
         }
     }
+    @PutMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@RequestBody UserRequest userRequest){
+        return ResponseEntity.ok(userService.updatePassword(userRequest));
+    }
+
+    @GetMapping("/checkPassword")
+    public ResponseEntity<?> checkPassword(){
+        return ResponseEntity.ok(userService.checkPassword());
+    }
+
 }

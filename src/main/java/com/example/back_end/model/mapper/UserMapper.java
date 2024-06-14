@@ -34,6 +34,9 @@ public interface UserMapper {
     @Mapping(source = "user.otpCreateTime", target = "otpCreateTime")
     @Mapping(source = "user.createDate", target = "createDate")
     @Mapping(source = "user.lastModifiedDate", target = "lastModifiedDate")
+    @Mapping(source = "user.dob", target = "dob")
+    @Mapping(source = "user.address", target = "address")
+
     UserResponse toResponse(User user);
 
     List<UserResponse> toUserListDTO(List<User> users);

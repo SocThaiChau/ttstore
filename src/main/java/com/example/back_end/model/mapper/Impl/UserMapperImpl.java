@@ -32,6 +32,8 @@ public class UserMapperImpl implements UserMapper {
         userResponse.setGender(user.getGender());
         userResponse.setAvatarUrl(user.getAvatarUrl());
         userResponse.setOtp(user.getOtp());
+        userResponse.setAddress(user.getAddress());
+        userResponse.setDob(user.getDob());
 //        userResponse.setCreateBy( user.getCreatedBy() ));
         userResponse.setLastModyfiedBy(user.getLastModyfiedBy());
         userResponse.setOtpCreateTime(user.getOtpCreateTime());
@@ -76,6 +78,8 @@ public class UserMapperImpl implements UserMapper {
         user.setOtpCreateTime(userRequest.getOtpCreateTime());
         user.setCreateDate(userRequest.getCreateDate());
         user.setLastModifiedDate(userRequest.getLastModifiedDate());
+        user.setAddress(userRequest.getAddress());
+        user.setDob(userRequest.getDob());
 
 
         return user;

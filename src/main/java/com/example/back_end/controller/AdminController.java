@@ -9,7 +9,6 @@ import com.example.back_end.model.entity.Category;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
-import com.example.back_end.model.request.ProductRequest;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
@@ -44,10 +43,10 @@ public class AdminController {
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping("/test")
-    public ResponseEntity<String> login(){
-        return ResponseEntity.ok("Authentication and Authorization is succedeed");
-    }
+//    @GetMapping("/test")
+//    public ResponseEntity<String> login(){
+//        return ResponseEntity.ok("Authentication and Authorization is succedeed");
+//    }
 
     @PostMapping("/users/create")
 //    @PreAuthorize("hasRole('VENDOR')")
