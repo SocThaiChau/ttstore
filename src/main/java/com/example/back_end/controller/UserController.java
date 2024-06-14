@@ -93,7 +93,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build());
         }
     }
-
+    @GetMapping("/products")
     private List<Map<String, Object>> getProductData(List<Product> products) {
         List<Map<String, Object>> productData = new ArrayList<>();
 
@@ -144,13 +144,15 @@ public class UserController {
             return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build(),HttpStatus.OK);
         }
     }
-    @GetMapping("/products")
+    @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchProducts(@RequestParam("keyword") String keyword) {
         try {
-            List<Product> products = productService.searchProducts(keyword);
-            return ResponseEntity.ok(ResponseObject.builder().status("Success").message("Search products successfully!").data(products).build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+            List<Product> products = productService.getsearchProducts(keyword);
+            List<Map<String, Object>> productData = getProductData(products);
+
+            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").data(productData).message("Search results").build());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build());
         }
     }
     @GetMapping("/categories/{categoryId}/products")
@@ -176,21 +178,29 @@ public class UserController {
     public ResponseEntity<ResponseObject> addToFavorites(HttpServletRequest request, @PathVariable("productId") Long productId) {
         try {
             User user = authenticateUser(request);
-            // Kiểm tra xem sản phẩm đã tồn tại trong danh sách yêu thích hay chưa
+            // Get the product
             Product product = productService.getSelectedProduct(Math.toIntExact(productId));
             if (product == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder().status("ERROR").message("Product not found.").build());
             }
 
+            // Check if the product is already in the user's favorites
             List<Product> favoriteProducts = user.getFavoriteProducts();
             if (favoriteProducts.contains(product)) {
                 return ResponseEntity.ok(ResponseObject.builder().status("ERROR").message("Product already in favorites.").build());
             }
 
-            // Thêm sản phẩm vào danh sách yêu thích của người dùng
+            // Add the product to the user's favorites
             favoriteProducts.add(product);
             user.setFavoriteProducts(favoriteProducts);
             userService.saveUser(user);
+
+            // Increment the favorite count of the product
+            if (product.getFavoriteCount() == null) {
+                product.setFavoriteCount(0);
+            }
+            product.setFavoriteCount(product.getFavoriteCount() + 1);
+            productService.updateProduct(product);
 
             return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").message("Product added to favorites successfully!").build());
         } catch (Exception e) {
@@ -216,6 +226,10 @@ public class UserController {
             favoriteProducts.remove(product);
             user.setFavoriteProducts(favoriteProducts);
             userService.saveUser(user);
+
+            product.setFavoriteCount(product.getFavoriteCount() - 1);
+            productService.updateProduct(product);
+
 
             return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").message("Product removed from favorites successfully!").build());
         } catch (Exception e) {
