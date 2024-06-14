@@ -129,7 +129,7 @@ public class UserController {
         }
     }
     @GetMapping("/product/{productID}")
-    ResponseEntity<ResponseObject> getDetailPosition(@PathVariable("productID")Integer id){
+    ResponseEntity<ResponseObject> getDetailProduct(@PathVariable("productID")Integer id){
         try{
             Product product = productService.getSelectedProduct(id);
             if(product == null){
