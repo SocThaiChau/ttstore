@@ -39,4 +39,5 @@ public class AdminController {
         List<User> userList = userService.findAll();
         return ResponseEntity.ok(userMapper.toUserListDTO(userList));
     }
+
 }

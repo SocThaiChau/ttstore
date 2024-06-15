@@ -38,6 +38,11 @@ public class SecurityConfig {
                         "/admin/**",
                         "/api/v1/auth/**",
                         "/admin/users/create",
+                        "/cloudinary/upload",
+                        "/updateUser/**",
+                        "/address/**",
+                        "/order/**",
+                        "/orderItem/**",
                         "/users/**"
                 ).permitAll()
                 .anyRequest().authenticated()
