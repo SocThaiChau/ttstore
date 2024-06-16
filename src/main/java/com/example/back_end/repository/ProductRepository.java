@@ -11,7 +11,6 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findBydescriptionContaining(String keyword);
     List<Product> findByUserId(Long userId);
-
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:keyword%")
     List<Product> findByKeyword(@Param("keyword") String keyword);
 }

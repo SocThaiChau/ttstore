@@ -27,7 +27,10 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable());
         http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeRequests()
-                .requestMatchers(HttpMethod.GET, "/admin/user", "/users/checkPassword").permitAll() // Allow access to /admin/user without authentication
+                .requestMatchers(HttpMethod.GET, "/admin/user," +
+                        "/admin/product/**").permitAll() // Allow access to /admin/user without authentication
+
+                .requestMatchers(HttpMethod.GET, "/admin/user", "/users/checkPassword").permitAll() // Allow access to /admin/user without authentication origin/dev
 
 //                .requestMatchers(HttpMethod.GET, "/**")
 //                .permitAll()
