@@ -15,6 +15,7 @@ import com.example.back_end.service.impl.CartService;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONException;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
 import java.text.SimpleDateFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -157,7 +157,7 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchProducts(@RequestParam("keyword") String keyword) {
         try {
-            List<Product> products = productService.getsearchProducts(keyword);
+            List<Product> products = productService.searchProducts(keyword);
             List<Map<String, Object>> productData = getProductData(products);
 
             return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").data(productData).message("Search results").build());

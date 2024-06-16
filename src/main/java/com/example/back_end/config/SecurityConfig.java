@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .requestMatchers("/login",
                         "/send-mail",
                         "/reset-password",
+                        "/admin/**",
                         "/api/v1/auth/**",
                         "/admin/users/create",
                         "/cloudinary/upload",
