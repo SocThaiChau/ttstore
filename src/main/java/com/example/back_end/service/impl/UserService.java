@@ -1,19 +1,16 @@
 package com.example.back_end.service.impl;
 
+import com.cloudinary.Cloudinary;
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.exception.UserException;
 import com.example.back_end.exception.NotFoundException;
-import com.example.back_end.model.entity.EmailDetails;
-import com.example.back_end.model.entity.Role;
-import com.example.back_end.model.entity.Roles;
-import com.example.back_end.model.entity.User;
+import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
+import com.example.back_end.repository.AddressRepository;
 import com.example.back_end.repository.EmailService;
 import com.example.back_end.repository.RoleRepository;
 import com.example.back_end.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +23,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -40,7 +38,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 @Transactional
 @Slf4j
 public class UserService implements UserDetailsService {
-   @Autowired
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -52,6 +50,9 @@ public class UserService implements UserDetailsService {
     @Autowired
     private EmailService emailService;
 
+    private final Cloudinary cloudinary;
+
+
     public List<User> findAll() {
         try {
             List<User> users = userRepository.findAll();
@@ -59,6 +60,11 @@ public class UserService implements UserDetailsService {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+
+    public User getUserById(Long id){
+        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
     }
 
     public String createUser(UserRequest userRequest) {
@@ -127,9 +133,9 @@ public class UserService implements UserDetailsService {
         userRepository.save(oldUser);
     }
 
-    public User getUserById(Long id){
-        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
-    }
+//    public User getUserById(Long id){
+//        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
+//    }
 
     public User getUserById(Integer id) throws UserException {
         return userRepository.findById(Long.valueOf(id)).orElseThrow(()->new UserException("UserNotFound!"));
@@ -150,12 +156,48 @@ public class UserService implements UserDetailsService {
     public boolean isEnabled(Integer id) throws UserException {
         return getUserById(id).isEnabled();
     }
+//    public  User updateUser(UserRequest user , Integer id, MultipartFile avatarFile) throws ExecutionControl.UserException, UserException, ParseException {
+//        User exUser = getUserById(id);
+//
+//        System.out.println("Đã vào update User");
+//        // Upload the avatar image to Cloudinary if a file is provided
+//        if (avatarFile != null && !avatarFile.isEmpty()) {
+//            try {
+//                Map<String, Object> uploadResult = upload(avatarFile);
+//                String avatarUrl = (String) uploadResult.get("url");
+//                exUser.setAvatarUrl(avatarUrl);
+//            } catch (RuntimeException e) {
+//                throw new UserException("Image upload failed: " + e.getMessage());
+//            }
+//        }
+//        Date dob = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS").parse(user.getDobirth());
+//
+//
+//        // Update other user details
+//        exUser.setName(user.getName());
+//        exUser.setPhoneNumber(user.getPhoneNumber());
+//        exUser.setDob(dob);
+//        exUser.setAddress(user.getAddress());
+//        exUser.setGender(user.getGender());
+//
+//        try{
+//            userRepository.save(exUser);
+//        }catch(Exception e){
+//            return null;
+//        }
+//        return exUser;
+//    }
+
     public  User updateUser(UserRequest user , Integer id) throws ExecutionControl.UserException, UserException {
         User exUser = getUserById(id);
-
-        exUser.setAvatarUrl(user.getAvatarUrl());
+        if (user.getAvatarUrl() != null){
+            exUser.setAvatarUrl(user.getAvatarUrl());
+        }
         exUser.setName(user.getName());
         exUser.setPhoneNumber(user.getPhoneNumber());
+        exUser.setGender(user.getGender());
+        exUser.setAddress(user.getAddress());
+        exUser.setDob(user.getDob());
 
         try{
             userRepository.save(exUser);
@@ -163,6 +205,13 @@ public class UserService implements UserDetailsService {
             return null;
         }
         return exUser;
+    }
+    public Map<String, Object> upload(MultipartFile file) {
+        try {
+            return this.cloudinary.uploader().upload(file.getBytes(), Map.of());
+        } catch (IOException io) {
+            throw new RuntimeException("Image upload failed", io);
+        }
     }
     public long getcountUser(){
         return userRepository.count();
@@ -202,8 +251,9 @@ public class UserService implements UserDetailsService {
     }
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, Cloudinary cloudinary) {
         this.userRepository = userRepository;
+        this.cloudinary = cloudinary;
     }
 
     @Transactional

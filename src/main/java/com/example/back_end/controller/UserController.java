@@ -5,6 +5,7 @@ import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.UnauthorizedException;
 import com.example.back_end.exception.UserException;
 import com.example.back_end.model.entity.*;
+import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.AddToCartRequest;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.CartRepository;
@@ -15,6 +16,7 @@ import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jdk.jshell.spi.ExecutionControl;
+import lombok.RequiredArgsConstructor;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,14 +25,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.text.SimpleDateFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.*;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
     @Autowired
@@ -45,6 +50,7 @@ public class UserController {
     private CartRepository cartRepository;
     @Autowired
     private CategoryRepository categoryRepository;
+    private final UserMapper userMapper;
 
     private User authenticateUser(HttpServletRequest request) throws UserException {
         String authHeader = request.getHeader("Authorization");
@@ -70,10 +76,13 @@ public class UserController {
             User updatedUser = userService.updateUser(userRequest, Math.toIntExact(user.getId()));
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("name", updatedUser.getName());
-            data.put("avatar", updatedUser.getAvatarUrl());
             data.put("phoneNumber", updatedUser.getPhoneNumber());
-            data.put("avartarUrl", updatedUser.getAvatarUrl());
+            if(updatedUser.getAvatarUrl() != null){
+                data.put("avartarUrl", updatedUser.getAvatarUrl());
+            }
             data.put("gender", updatedUser.getGender());
+            data.put("address", updatedUser.getAddress());
+            data.put("dob", updatedUser.getDob());
 
             return ResponseEntity.ok(ResponseObject.builder().status("Success").message("Update information successfully!").data(data).build());
         } catch (Exception e) {
@@ -99,6 +108,7 @@ public class UserController {
 
         for (Product product : products) {
             Map<String, Object> productInfo = new HashMap<>();
+            productInfo.put("id", product.getId());
             productInfo.put("name", product.getName());
             productInfo.put("description", product.getDescription());
             productInfo.put("price", product.getPrice());
@@ -380,4 +390,9 @@ public class UserController {
         return ResponseEntity.ok(userService.checkPassword());
     }
 
+    @GetMapping("/getUser/{userId}")
+    public ResponseEntity<?> getById(@PathVariable Long userId){
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(userMapper.toResponse(user));
+    }
 }

@@ -92,8 +92,8 @@ public class Product implements Serializable {
     @JsonIgnore
     private List<Review> productReviewList;
 
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private OrderItem orderItem;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> orderItem;
 
     @ManyToOne
     @JoinColumn(name = "category_id")

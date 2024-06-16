@@ -13,5 +13,5 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class UserRoleResponse implements Serializable {
     private Long roleId;
-    private String role;
+    private String roles;
 }

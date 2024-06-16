@@ -86,16 +86,6 @@ public class User implements UserDetails {
     @JoinColumn(name = "user_role_id")
     private Role role;
 
-    @ManyToOne
-    @JoinColumn(name = "created_by_user_id")
-    @JsonBackReference
-    private User createdBy;
-
-
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<User> createdUsers;
-
     @OneToMany(mappedBy = "addressUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Address> addressList;

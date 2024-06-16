@@ -39,6 +39,12 @@ public class SecurityConfig {
                         "/send-mail",
                         "/reset-password",
                         "/api/v1/auth/**",
+                        "/admin/users/create",
+                        "/cloudinary/upload",
+                        "/updateUser/**",
+                        "/address/**",
+                        "/order/**",
+                        "/orderItem/**",
                         "/users/**"
                 ).permitAll()
                 .anyRequest().authenticated()
