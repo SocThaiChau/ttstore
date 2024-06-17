@@ -12,6 +12,7 @@ import com.example.back_end.repository.CartRepository;
 import com.example.back_end.repository.CategoryRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CartService;
+import com.example.back_end.service.impl.NotificationService;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,6 +50,8 @@ public class UserController {
     private JwtService jwtService;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private NotificationService notificationService;
     @Autowired
     private CategoryRepository categoryRepository;
     private final UserMapper userMapper;
@@ -212,9 +216,30 @@ public class UserController {
             product.setFavoriteCount(product.getFavoriteCount() + 1);
             productService.updateProduct(product);
 
+            // Notify other users about the new like
+            notifyUsersAboutNewFavorite(product, user);
+
             return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").message("Product added to favorites successfully!").build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        }
+    }
+
+    private void notifyUsersAboutNewFavorite(Product product, User likedByUser) {
+        List<User> usersToNotify = userService.getAllUsers().stream()
+                .filter(u -> !u.equals(likedByUser))
+                .collect(Collectors.toList());
+
+        for (User user : usersToNotify) {
+            Notification notification = Notification.builder()
+                    .title("New favorite on a Product")
+                    .message(likedByUser.getUsername() + " liked the product: " + product.getName())
+                    .recipient(user)
+                    .sender(likedByUser)
+                    .createdAt(new Date())
+                    .build();
+
+            notificationService.saveNotification(notification);
         }
     }
     @DeleteMapping("/favorite/{productId}")
@@ -276,6 +301,15 @@ public class UserController {
             followedUsers.add(followedUser);
             user.setFollowedUsers(followedUsers);
             userService.saveUser(user);
+
+            // Send notification to the followed user
+            Notification notification = Notification.builder()
+                    .title("New Follower")
+                    .message(user.getUsername() + " has started following you.")
+                    .recipient(followedUser)
+                    .createdAt(new Date())
+                    .build();
+            notificationService.saveNotification(notification);
 
             return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS")
                     .message("User successfully followed.").build());

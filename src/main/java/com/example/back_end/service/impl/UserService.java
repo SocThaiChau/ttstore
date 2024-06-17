@@ -123,6 +123,9 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email).orElseThrow(()-> new NotFoundException("Không tìm email: "+ email));
     }
 
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
     public void updateUserPassword(Long id, String password){
         User oldUser = getUserById(id);
         if(oldUser == null){

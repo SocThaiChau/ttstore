@@ -1,31 +1,29 @@
 package com.example.back_end.controller;
 
 import com.example.back_end.auth.JwtService;
-import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.UnauthorizedException;
 import com.example.back_end.exception.UserException;
-import com.example.back_end.model.entity.Category;
-import com.example.back_end.model.entity.Product;
-import com.example.back_end.model.entity.User;
+import com.example.back_end.model.dto.NotificationDTO;
+import com.example.back_end.model.dto.SenderDto;
+import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
+import com.example.back_end.service.impl.NotificationService;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,8 +34,8 @@ public class AdminController {
     private final UserMapper userMapper;
     @Autowired
     private ProductService productService;
-//    @Autowired
-//    private ProductRequest productRequest;
+    @Autowired
+    private NotificationService notificationService;
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -90,6 +88,7 @@ public class AdminController {
             product.setCategory(category);
             product.setUser(user);
             product.setCreatedDate(new Date());
+            product.setCreatedBy(username);
             Product createProduct = productService.createProduct(product);
 
             Map<String, Object> dataproduct = new LinkedHashMap<>();
@@ -201,6 +200,61 @@ public class AdminController {
 
         }catch (Exception exception){
             return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build(),HttpStatus.OK);
+        }
+    }
+    @GetMapping("/notifications")
+    public ResponseEntity<List<NotificationDTO>> getNotifications(HttpServletRequest request) {
+        try {
+            User user = authenticateUser(request);
+            List<Notification> notifications = notificationService.getNotificationsByUser(user);
+            List<NotificationDTO> notificationDtos = notifications.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(notificationDtos);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+    @GetMapping("/notifications/{id}")
+    public ResponseEntity<NotificationDTO> getNotificationDetails(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            User user = authenticateUser(request);
+            Notification notification = notificationService.getNotificationById(id);
+            if (notification != null && notification.getRecipient().equals(user)) {
+                notification.setRead(true);
+                notificationService.saveNotification(notification);
+                NotificationDTO dto = convertToDto(notification);
+                return ResponseEntity.ok(dto);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    private NotificationDTO convertToDto(Notification notification) {
+        NotificationDTO dto = new NotificationDTO();
+        dto.setTitle(notification.getTitle());
+        dto.setMessage(notification.getMessage());
+        dto.setSender(new SenderDto(notification.getSender().getId(), notification.getSender().getName()));
+        dto.setCreatedAt(notification.getCreatedAt());
+        dto.setId(notification.getId());
+        dto.setRead(notification.isRead());
+        return dto;
+    }
+
+    @GetMapping("/notifications/unread")
+    public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(HttpServletRequest request) {
+        try {
+            User user = authenticateUser(request);
+            List<Notification> unreadNotifications = notificationService.getUnreadNotificationsByUser(user);
+            List<NotificationDTO> notificationDtos = unreadNotifications.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(notificationDtos);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }
