@@ -11,10 +11,7 @@ import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.repository.CartRepository;
 import com.example.back_end.repository.CategoryRepository;
 import com.example.back_end.response.ResponseObject;
-import com.example.back_end.service.impl.CartService;
-import com.example.back_end.service.impl.NotificationService;
-import com.example.back_end.service.impl.ProductService;
-import com.example.back_end.service.impl.UserService;
+import com.example.back_end.service.impl.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jdk.jshell.spi.ExecutionControl;
@@ -52,6 +49,8 @@ public class UserController {
     private CartRepository cartRepository;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private CategoryService categoryService;
     @Autowired
     private CategoryRepository categoryRepository;
     private final UserMapper userMapper;
@@ -125,6 +124,41 @@ public class UserController {
 
         return productData;
     }
+    @GetMapping("/categories")
+    public ResponseEntity<ResponseObject> getCategories() {
+        try {
+            List<Category> categories = categoryService.getAllCategories();
+            List<Map<String, Object>> categoryData = getCategoryData(categories);
+
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status("SUCCESS")
+                    .data(categoryData)
+                    .message("Categories retrieved successfully!")
+                    .build());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                    .body(ResponseObject.builder()
+                            .status("ERROR")
+                            .message(exception.getMessage())
+                            .build());
+        }
+    }
+
+    private List<Map<String, Object>> getCategoryData(List<Category> categories) {
+        List<Map<String, Object>> categoryData = new ArrayList<>();
+
+        for (Category category : categories) {
+            Map<String, Object> categoryInfo = new HashMap<>();
+            categoryInfo.put("id", category.getId());
+            categoryInfo.put("name", category.getName());
+            categoryInfo.put("imageUrl",category.getImage());
+
+            categoryData.add(categoryInfo);
+        }
+
+        return categoryData;
+    }
+
     @GetMapping("/profile")
     @ResponseBody
     public ResponseEntity<ResponseObject> getDetailUser(HttpServletRequest request) {
