@@ -9,6 +9,7 @@ import com.example.back_end.model.dto.SenderDto;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
+import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
 import com.example.back_end.service.impl.NotificationService;
@@ -36,6 +37,8 @@ public class AdminController {
     private ProductService productService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private ProductRepository productRepository;
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -257,4 +260,37 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+    @GetMapping("/products/total-revenue")
+    public ResponseEntity<Map<String, Double>> getTotalRevenue(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Double totalRevenue = productService.getTotalRevenueByUser(user.getId());
+        Map<String, Double> response = new HashMap<>();
+        response.put("totalRevenue", totalRevenue);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/products/total-sold")
+    public ResponseEntity<Map<String, Long>> getTotalProductQuantity(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Long totalSold = productService.getTotalProductSoldByUser(user.getId());
+        Map<String, Long> response = new HashMap<>();
+        response.put("totalSold", totalSold);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/products/revenue")
+    public ResponseEntity<Map<String, Double>> getRevenue(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Double Revenue = productService.getRevenueByUser(user.getId());
+        Map<String, Double> response = new HashMap<>();
+        response.put("Revenue", Revenue);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/products/sold")
+    public ResponseEntity<Map<String, Long>> getProductQuantity(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Long sold = productService.getProductSoldByUser(user.getId());
+        Map<String, Long> response = new HashMap<>();
+        response.put("Sold", sold);
+        return ResponseEntity.ok(response);
+    }
+
 }

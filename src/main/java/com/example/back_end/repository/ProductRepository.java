@@ -7,10 +7,21 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findBydescriptionContaining(String keyword);
     List<Product> findByUserId(Long userId);
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:keyword%")
     List<Product> findByKeyword(@Param("keyword") String keyword);
+    @Query("SELECT SUM(p.sold) FROM Product p WHERE p.user.id = :userId")
+    Long getTotalProductSoldByUser(Long userId);
+    @Query("SELECT p.sold FROM Product p WHERE p.user.id = :userId")
+    Long getProductSoldByUser(Long userId);
+    @Query("SELECT SUM(p.sold * p.price) FROM Product p WHERE p.user.id = :userId")
+    Double getTotalRevenueByUser(Long userId);
+    @Query("SELECT (p.sold * p.price) FROM Product p WHERE p.user.id = :userId")
+    Double getRevenueByUser(Long userId);
+
 }
