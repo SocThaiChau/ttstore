@@ -33,6 +33,7 @@ public class User implements UserDetails {
     @Column(name = "email")
     private String email;
 
+    @Getter
     @Column(name = "name")
     private String name;
 
@@ -45,8 +46,16 @@ public class User implements UserDetails {
     @Column(name = "gender")
     private String gender;
 
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "avatarUrl")
     private String avatarUrl;
+
+    @Column(name = "dob")
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date dob;
 
     @Column(name = "otp")
     private String otp;
@@ -69,19 +78,13 @@ public class User implements UserDetails {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastModifiedDate;
 
+
+    @Column(name = "checkPassword")
+    private Boolean checkPassword;
+
     @ManyToOne
     @JoinColumn(name = "user_role_id")
     private Role role;
-
-    @ManyToOne
-    @JoinColumn(name = "created_by_user_id")
-    @JsonBackReference
-    private User createdBy;
-
-
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<User> createdUsers;
 
     @OneToMany(mappedBy = "addressUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -103,11 +106,34 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<Cart> cartList;
 
+    @ManyToMany
+    @JoinTable(
+            name = "User_FavoriteProduct",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> favoriteProducts;
+
+    @Getter
+    @ManyToMany
+    @JoinTable(
+            name = "User_FollowedUser",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "followed_user_id")
+    )
+    private List<User> followedUsers;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(
                 new SimpleGrantedAuthority("ROLE_"+role.getRoles().name())
         );
+    }
+
+    @Override
+    public String toString() {
+        return "User [id=" + id + ", username=" + username + ", email=" + email + ", name=" + name + "]";
     }
     // Getter và Setter cho các thuộc tính cần chỉnh sửa thông tin cá nhân
     public void setName(String name) {
@@ -125,7 +151,6 @@ public class User implements UserDetails {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
@@ -160,5 +185,15 @@ public class User implements UserDetails {
         return true;
     }
 
+    public List<Cart> getCartList() {
+        return cartList;
+    }
 
+    public List<User> getFollowedUsers() {
+        return followedUsers;
+    }
+
+    public void setFollowedUsers(List<User> followedUsers) {
+        this.followedUsers = followedUsers;
+    }
 }

@@ -21,7 +21,7 @@ public class UserMapperImpl implements UserMapper {
 
         UserResponse userResponse = new UserResponse();
 
-        userResponse.setId(user.getId());
+        userResponse.setId(Long.valueOf(user.getId()));
         userResponse.setName(user.getName());
         userResponse.setEmail(user.getEmail());
         userResponse.setUserRoleResponse(userRoleResponse (user.getRole()));
@@ -32,6 +32,8 @@ public class UserMapperImpl implements UserMapper {
         userResponse.setGender(user.getGender());
         userResponse.setAvatarUrl(user.getAvatarUrl());
         userResponse.setOtp(user.getOtp());
+        userResponse.setAddress(user.getAddress());
+        userResponse.setDob(user.getDob());
 //        userResponse.setCreateBy( user.getCreatedBy() ));
         userResponse.setLastModyfiedBy(user.getLastModyfiedBy());
         userResponse.setOtpCreateTime(user.getOtpCreateTime());
@@ -76,6 +78,8 @@ public class UserMapperImpl implements UserMapper {
         user.setOtpCreateTime(userRequest.getOtpCreateTime());
         user.setCreateDate(userRequest.getCreateDate());
         user.setLastModifiedDate(userRequest.getLastModifiedDate());
+        user.setAddress(userRequest.getAddress());
+        user.setDob(userRequest.getDob());
 
 
         return user;
@@ -90,7 +94,7 @@ public class UserMapperImpl implements UserMapper {
 
         userRoleResponse.setRoleId( role.getId() );
         if ( role.getRoles() != null ) {
-            userRoleResponse.setRole( role.getRoles().name() );
+            userRoleResponse.setRoles( role.getRoles().name() );
         }
 
         return userRoleResponse;

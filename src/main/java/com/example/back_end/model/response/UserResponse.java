@@ -24,6 +24,7 @@ public class UserResponse implements Serializable {
     private String gender;
     private String avatarUrl;
     private String otp;
+    private String address;
     private UserResponse createBy;
     private String lastModyfiedBy;
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -35,6 +36,9 @@ public class UserResponse implements Serializable {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastModifiedDate;
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date dob;
     private UserRoleResponse userRoleResponse;
     private Long userRoleId;
 
