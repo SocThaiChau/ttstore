@@ -8,7 +8,9 @@ import com.example.back_end.model.dto.NotificationDTO;
 import com.example.back_end.model.dto.SenderDto;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
+import com.example.back_end.model.request.ProductRequest;
 import com.example.back_end.model.request.UserRequest;
+import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
 import com.example.back_end.service.impl.NotificationService;
@@ -36,6 +38,8 @@ public class AdminController {
     private ProductService productService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private ProductRepository productRepository;
     @Autowired
     private JwtService jwtService;
     @Autowired
@@ -88,7 +92,7 @@ public class AdminController {
             product.setCategory(category);
             product.setUser(user);
             product.setCreatedDate(new Date());
-            product.setCreatedBy(username);
+            product.setUrl(product.getUrl());
             Product createProduct = productService.createProduct(product);
 
             Map<String, Object> dataproduct = new LinkedHashMap<>();
@@ -112,7 +116,85 @@ public class AdminController {
             return new ResponseEntity<>(ResponseObject.builder().message(e.getMessage()).status("ERROR").build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
+//    public ResponseEntity<ResponseObject> createProduct(@RequestBody @Valid ProductRequest productRequest, HttpServletRequest request) throws UserException {
+//        try {
+//            User user = authenticateUser(request);
+//            Long userId = user.getId();
+//            String username = user.getName();
+//
+//            Category category = categoryService.getCategoryById(productRequest.getCategory().getId());
+//            Product product = new Product();
+//            product.setName(productRequest.getName());
+//            product.setDescription(productRequest.getDescription());
+//            product.setPrice(productRequest.getPrice());
+//            product.setPromotionalPrice(productRequest.getPromotionalPrice());
+//            product.setQuantity(productRequest.getQuantity());
+//            product.setQuantityAvailable(productRequest.getQuantityAvailable());
+//            product.setNumberOfRating(productRequest.getNumberOfRating());
+//            product.setFavoriteCount(productRequest.getFavoriteCount());
+//            product.setSold(productRequest.getSold());
+//            product.setIsActive(productRequest.getIsActive());
+//            product.setIsSelling(productRequest.getIsSelling());
+//            product.setRating(productRequest.getRating());
+//            product.setCreatedBy(username);
+//            product.setCreatedDate(new Date());
+//            product.setCategory(category);
+//            product.setUser(user);
+//            product.setImages(productRequest.getImages());
+//
+//            Product createdProduct = productService.createProduct(product);
+//
+//            // Adding images after creating the product
+//            if (productRequest.getImages() != null) {
+//                List<Image> images = productRequest.getImages().stream()
+//                        .map(imgRequest -> {
+//                            Image image = new Image();
+//                            image.setUrl(imgRequest.getUrl());
+//                            image.setProduct(createdProduct);
+//                            return image;
+//                        }).collect(Collectors.toList());
+//                productService.addImagesToProduct(createdProduct, images);
+//            }
+//            // Fetch the updated product with images
+//            Product newProduct = productService.getProductById(createdProduct.getId());
+//
+//            // Set the URL of the first image
+//            if (newProduct.getImages() != null && !newProduct.getImages().isEmpty()) {
+//                newProduct.setUrl(createdProduct.getImages().get(0).getUrl());
+//                productService.createProduct(createdProduct);
+//            }
+//
+//            Map<String, Object> dataproduct = new LinkedHashMap<>();
+//            dataproduct.put("name", createdProduct.getName());
+//            dataproduct.put("description", createdProduct.getDescription());
+//            dataproduct.put("price", createdProduct.getPrice());
+//            dataproduct.put("quantity", createdProduct.getQuantity());
+//            dataproduct.put("quantityAvailable", createdProduct.getQuantityAvailable());
+//            dataproduct.put("categoryId", createdProduct.getCategory().getId());
+//            dataproduct.put("userId", createdProduct.getUser().getId());
+//            dataproduct.put("createdBy", createdProduct.getCreatedBy());
+//            dataproduct.put("createdDate", createdProduct.getCreatedDate());
+//            dataproduct.put("isActive", createdProduct.getIsActive());
+//            dataproduct.put("url", createdProduct.getUrl());
+//
+//            List<Map<String, Object>> imagesResponse = createdProduct.getImages().stream()
+//                    .map(image -> {
+//                        Map<String, Object> imageMap = new LinkedHashMap<>();
+//                        imageMap.put("id", image.getId());
+//                        imageMap.put("url", image.getUrl());
+//                        return imageMap;
+//                    }).collect(Collectors.toList());
+//            dataproduct.put("images", imagesResponse);
+//
+//            ResponseObject response = ResponseObject.builder()
+//                    .status("Success")
+//                    .data(dataproduct)
+//                    .build();
+//            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(ResponseObject.builder().message(e.getMessage()).status("ERROR").build(), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
     @GetMapping("/product/my-products")
     public ResponseEntity<ResponseObject> getMyProducts(HttpServletRequest request) {
         try {
@@ -256,5 +338,38 @@ public class AdminController {
         } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @GetMapping("/products/total-revenue")
+    public ResponseEntity<Map<String, Double>> getTotalRevenue(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Double totalRevenue = productService.getTotalRevenueByUser(user.getId());
+        Map<String, Double> response = new HashMap<>();
+        response.put("totalRevenue", totalRevenue);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/products/total-sold")
+    public ResponseEntity<Map<String, Long>> getTotalProductQuantity(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Long totalSold = productService.getTotalProductSoldByUser(user.getId());
+        Map<String, Long> response = new HashMap<>();
+        response.put("totalSold", totalSold);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/products/revenue")
+    public ResponseEntity<Map<String, Double>> getRevenue(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Double Revenue = productService.getRevenueByUser(user.getId());
+        Map<String, Double> response = new HashMap<>();
+        response.put("Revenue", Revenue);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/products/sold")
+    public ResponseEntity<Map<String, Long>> getProductQuantity(HttpServletRequest request) throws UserException {
+        User user = authenticateUser(request);
+        Long sold = productService.getProductSoldByUser(user.getId());
+        Map<String, Long> response = new HashMap<>();
+        response.put("Sold", sold);
+        return ResponseEntity.ok(response);
     }
 }

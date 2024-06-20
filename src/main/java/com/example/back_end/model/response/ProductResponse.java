@@ -1,6 +1,5 @@
 package com.example.back_end.model.response;
 
-import com.example.back_end.model.entity.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,6 +47,10 @@ public class ProductResponse implements Serializable {
 
     private String lastModifiedBy;
 
+    private String url;
+
+    private Long userId;
+
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
@@ -56,8 +59,8 @@ public class ProductResponse implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastModifiedDate;
 
-    private List<Image> images;
+    private List<ImageResponse> images;
 
-    private List<Review> productReviewList;
+    private List<ReviewResponse> productReviewList;
 
 }

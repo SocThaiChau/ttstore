@@ -28,15 +28,15 @@ public class OrderItemService {
         OrderItemResponse response = new OrderItemResponse();
         response.setId(orderItem.getId());
         response.setQuantity(orderItem.getQuantity());
-        response.setPrice(orderItem.getPrice());
+//        response.setPrice(orderItem.getPrice());
         response.setSubtotal(orderItem.getSubtotal());
-        response.setImageUrl(orderItem.getImageUrl());
+//        response.setImageUrl(orderItem.getImageUrl());
         response.setCreatedDate(orderItem.getCreatedDate());
         response.setLastModifiedDate(orderItem.getLastModifiedDate());
 
         // Set product responses
         ProductResponse productResponse = convertToProductResponse(orderItem.getProduct());
-        response.setProductResponse(productResponse);
+//        response.setProductResponse(productResponse);
 
         // Set order response
         Order order = orderItem.getOrder();
@@ -50,9 +50,9 @@ public class OrderItemService {
         orderResponse.setTotalItem(order.getTotalItem());
         orderResponse.setCreatedDate(order.getCreatedDate());
         orderResponse.setLastModifiedBy(order.getLastModifiedBy());
-        orderResponse.setAddress(order.getAddress());
-        orderResponse.setUser(order.getUser());
-        response.setOrderResponse(orderResponse);
+//        orderResponse.setAddress(order.getAddress());
+//        orderResponse.setUser(order.getUser());
+//        response.setOrderResponse(orderResponse);
 
         return response;
     }
@@ -76,8 +76,8 @@ public class OrderItemService {
         productResponse.setLastModifiedBy(product.getLastModifiedBy());
         productResponse.setCreatedDate(product.getCreatedDate());
         productResponse.setLastModifiedDate(product.getLastModifiedDate());
-        productResponse.setImages(product.getImages());
-        productResponse.setProductReviewList(product.getProductReviewList());
+//        productResponse.setImages(product.getImages());
+//        productResponse.setProductReviewList(product.getProductReviewList());
 
         return productResponse;
     }

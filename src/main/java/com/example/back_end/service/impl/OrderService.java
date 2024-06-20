@@ -2,7 +2,6 @@ package com.example.back_end.service.impl;
 
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.model.entity.*;
-import com.example.back_end.model.request.OrderItemRequest;
 import com.example.back_end.model.request.OrderRequest;
 import com.example.back_end.model.response.OrderItemResponse;
 import com.example.back_end.model.response.OrderResponse;
@@ -15,9 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,8 +77,8 @@ public class OrderService {
         response.setLastModifiedBy(order.getLastModifiedBy());
         response.setCreatedDate(order.getCreatedDate());
         response.setLastModifiedDate(order.getLastModifiedDate());
-        response.setAddress(order.getAddress());
-        response.setUser(order.getUser());
+        response.setAddressId(order.getAddress().getId());  // Only set address ID
+        response.setUserId(order.getUser().getId());  // Only set user ID
 
         // Convert OrderItems to OrderItemResponses
         List<OrderItemResponse> orderItemResponses = order.getItemList().stream()
@@ -94,52 +93,10 @@ public class OrderService {
         OrderItemResponse response = new OrderItemResponse();
         response.setId(orderItem.getId());
         response.setQuantity(orderItem.getQuantity());
-        response.setPrice(orderItem.getPrice());
+        response.setProductId(orderItem.getProduct().getId());  // Only set product ID
         response.setSubtotal(orderItem.getSubtotal());
-        response.setImageUrl(orderItem.getImageUrl());
         response.setCreatedDate(orderItem.getCreatedDate());
         response.setLastModifiedDate(orderItem.getLastModifiedDate());
-
-        Product product = orderItem.getProduct();
-        if (product != null) {
-            ProductResponse productResponse = new ProductResponse();
-            productResponse.setId(product.getId());
-            productResponse.setName(product.getName());
-            productResponse.setDescription(product.getDescription());
-            productResponse.setImages(product.getImages());
-            productResponse.setCreatedDate(product.getCreatedDate());
-            productResponse.setFavoriteCount(product.getFavoriteCount());
-            productResponse.setIsActive(product.getIsActive());
-            productResponse.setIsSelling(product.getIsSelling());
-            productResponse.setSold(product.getSold());
-            productResponse.setRating(product.getRating());
-            productResponse.setProductReviewList(product.getProductReviewList());
-            productResponse.setPromotionalPrice(product.getPromotionalPrice());
-            productResponse.setPrice(product.getPrice());
-            productResponse.setQuantityAvailable(product.getQuantityAvailable());
-            productResponse.setQuantity(product.getQuantity());
-            productResponse.setNumberOfRating(product.getNumberOfRating());
-            productResponse.setLastModifiedBy(product.getLastModifiedBy());
-            productResponse.setLastModifiedDate(product.getLastModifiedDate());
-
-            response.setProductResponse(productResponse);
-        }
-
-        OrderResponse orderResponse = new OrderResponse();
-        if (orderItem.getOrder() != null) {
-            orderResponse.setId(orderItem.getOrder().getId());
-            orderResponse.setStatus(orderItem.getOrder().getStatus());
-            orderResponse.setNote(orderItem.getOrder().getNote());
-            orderResponse.setTotal(orderItem.getOrder().getTotal());
-            orderResponse.setIsPaidBefore(orderItem.getOrder().getIsPaidBefore());
-            orderResponse.setPaymentType(orderItem.getOrder().getPaymentType());
-            orderResponse.setTotalItem(orderItem.getOrder().getTotalItem());
-            orderResponse.setCreatedDate(orderItem.getOrder().getCreatedDate());
-            orderResponse.setLastModifiedBy(orderItem.getOrder().getLastModifiedBy());
-            orderResponse.setAddress(orderItem.getOrder().getAddress());
-            orderResponse.setUser(orderItem.getOrder().getUser());
-        }
-        response.setOrderResponse(orderResponse);
 
         return response;
     }
@@ -153,6 +110,7 @@ public class OrderService {
             if (userId == null) {
                 throw new RuntimeException("User ID is null");
             }
+
             // Find user from UserRepository
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
@@ -162,12 +120,12 @@ public class OrderService {
 
             // Create order and set its properties
             Order order = new Order();
-            order.setNote(orderRequest.getNote());
-            order.setIsPaidBefore(orderRequest.getIsPaidBefore());
-            order.setStatus(orderRequest.getStatus());
-            order.setTotal(orderRequest.getTotal());
-            order.setTotalItem(orderRequest.getTotalItem());
-            order.setPaymentType(orderRequest.getPaymentType());
+//            order.setNote(orderRequest.getNote());
+            order.setIsPaidBefore(false);
+            order.setStatus("Đang chờ xác nhận");
+            order.setTotal(0.0); // Initialize total to 0.0
+            order.setTotalItem(0);
+            order.setPaymentType("Thanh toán khi nhận hàng");
             LocalDateTime localDateTime = LocalDateTime.now();
             Date createdDate = ConvertToDate.convertToDateViaSqlTimestamp(localDateTime);
             order.setCreatedDate(createdDate);
@@ -177,16 +135,24 @@ public class OrderService {
             // Save order to get its ID
             Order savedOrder = orderRepository.save(order);
 
+            final double[] totalOrderAmount = {0.0}; // Use array to hold the total amount
+            final int[] totalOrderItems = {0}; // Use array to hold the total item count
+
             // Create order items list<OrderItem>
             List<OrderItem> items = orderRequest.getOrderItems().stream().map(
                     item -> {
-                        Product product = productService.getProductById(item.getProduct().getId());
+                        Product product = productService.getProductById(item.getProductId());
+                        if (product == null) {
+                            throw new RuntimeException("Product not found with ID: " + item.getProductId());
+                        }
 
                         OrderItem orderItem = new OrderItem();
-                        orderItem.setPrice(item.getProduct().getPrice());
+                        orderItem.setPrice(product.getPrice());
                         orderItem.setQuantity(item.getQuantity());
-                        orderItem.setSubtotal(item.getProduct().getPrice() * item.getQuantity());
-//                        orderItem.setImageUrl(item.getProduct().getImages().toString());
+                        double subtotal = product.getPrice() * item.getQuantity();
+                        orderItem.setSubtotal(subtotal);
+                        totalOrderAmount[0] += subtotal; // Add subtotal to totalOrderAmount
+                        totalOrderItems[0] += item.getQuantity(); // Add item quantity to totalOrderItems
                         orderItem.setProduct(product);
                         orderItem.setOrder(savedOrder); // Set order for the item
 
@@ -196,6 +162,11 @@ public class OrderService {
 
             // Save each order item
             orderItemRepository.saveAll(items);
+
+            // Update order with total amount and total items
+            savedOrder.setTotal(totalOrderAmount[0]);
+            savedOrder.setTotalItem(totalOrderItems[0]);
+            orderRepository.save(savedOrder); // Save updated order
 
             return "Create Order Successfully...";
         } catch (Exception e) {

@@ -8,13 +8,14 @@ import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.AddToCartRequest;
 import com.example.back_end.model.request.UserRequest;
+import com.example.back_end.model.response.CartItemResponse;
+import com.example.back_end.model.response.CartResponse;
+import com.example.back_end.model.response.ProductResponse;
 import com.example.back_end.repository.CartRepository;
 import com.example.back_end.repository.CategoryRepository;
+import com.example.back_end.repository.ImageRepository;
 import com.example.back_end.response.ResponseObject;
-import com.example.back_end.service.impl.CartService;
-import com.example.back_end.service.impl.NotificationService;
-import com.example.back_end.service.impl.ProductService;
-import com.example.back_end.service.impl.UserService;
+import com.example.back_end.service.impl.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jdk.jshell.spi.ExecutionControl;
@@ -55,6 +56,12 @@ public class UserController {
     @Autowired
     private CategoryRepository categoryRepository;
     private final UserMapper userMapper;
+
+    @Autowired
+    private CartItemService cartItemService;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     private User authenticateUser(HttpServletRequest request) throws UserException {
         String authHeader = request.getHeader("Authorization");
@@ -119,12 +126,37 @@ public class UserController {
             productInfo.put("promotionalPrice", product.getPromotionalPrice());
             productInfo.put("sold", product.getSold());
             productInfo.put("rating", product.getRating());
+            productInfo.put("url", product.getUrl());
 
             productData.add(productInfo);
         }
 
         return productData;
     }
+
+    @GetMapping("/getAllProduct")
+    public ResponseEntity<ResponseObject> getAllProducts() {
+        try {
+            // Assume productService retrieves all products and returns List<ProductResponse>
+            List<ProductResponse> products = productService.getAllProductsResponse();
+
+            // Construct success response
+            ResponseObject response = ResponseObject.builder()
+                    .status("Success")
+                    .data(products)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Handle exception and return error response
+            ResponseObject errorResponse = ResponseObject.builder()
+                    .status("Error")
+                    .message(e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     @GetMapping("/profile")
     @ResponseBody
     public ResponseEntity<ResponseObject> getDetailUser(HttpServletRequest request) {
@@ -158,6 +190,33 @@ public class UserController {
             return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build(),HttpStatus.OK);
         }
     }
+
+    @GetMapping("/product/detail/{productId}")
+    public ResponseEntity<ResponseObject> getProductById(@PathVariable Long productId) {
+        try {
+            ProductResponse product = productService.getProductByIdDetail(productId);
+
+            if (product != null) {
+                ResponseObject response = ResponseObject.builder()
+                        .status("Success")
+                        .data(product)
+                        .build();
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
+                        .status("Error")
+                        .message("Product not found with ID: " + productId)
+                        .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
+                    .status("Error")
+                    .message(e.getMessage())
+                    .build());
+        }
+    }
+
+
     @GetMapping("/search")
     public ResponseEntity<ResponseObject> searchProducts(@RequestParam("keyword") String keyword) {
         try {
@@ -376,8 +435,11 @@ public class UserController {
             // Xác thực người dùng
             User user = authenticateUser(request);
 
+            System.out.println("đã vào cart");
             // Lấy hoặc tạo giỏ hàng cho người dùng
             Cart cart = cartService.getOrCreateCart(user);
+            System.out.println("proId: " + addToCartRequest.getProductId());
+            System.out.println("quantity: " + addToCartRequest.getQuantity());
 
             // Kiểm tra xem sản phẩm đã có trong giỏ hàng hay chưa
             List<CartItem> cartItems = cart.getCartItemList();
@@ -386,6 +448,7 @@ public class UserController {
                     // Sản phẩm đã có trong giỏ hàng, cập nhật số lượng và tổng giá trị
                     cartItem.setQuantity(cartItem.getQuantity() + addToCartRequest.getQuantity());
                     cartItem.setSubtotal(cartItem.getSubtotal() + (addToCartRequest.getQuantity() * cartItem.getPrice()));
+                    System.out.println("sản phẩm đã có trong giỏ hàng");
                     cartService.updateCart(cart);
                     return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").message("Product quantity updated in cart.").build());
                 }
@@ -401,7 +464,7 @@ public class UserController {
             newCartItem.setQuantity(addToCartRequest.getQuantity());
             newCartItem.setPrice(product.getPrice());
             newCartItem.setSubtotal(product.getPrice() * addToCartRequest.getQuantity());
-            newCartItem.setImageUrl(product.getImages().toString());
+            newCartItem.setImageUrl(product.getUrl());
             newCartItem.setCart(cart);
 
             cartItems.add(newCartItem);
@@ -412,6 +475,51 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to add product to cart.").build());
+        }
+    }
+
+    @GetMapping("/cart/detail")
+    public ResponseEntity<ResponseObject> getCartDetail(HttpServletRequest request) {
+        try {
+            // Xác thực người dùng
+            User user = authenticateUser(request);
+
+            // Lấy giỏ hàng của người dùng
+            Cart cart = cartService.getOrCreateCart(user);
+
+            // Chuyển đổi danh sách CartItem thành CartItemResponse
+            List<CartItemResponse> cartItemResponses = cart.getCartItemList().stream()
+                    .map(cartItem -> new CartItemResponse(
+                            cartItem.getId(),
+                            cartItem.getProduct().getId(),
+                            cartItem.getProduct().getName(),
+                            cartItem.getQuantity(),
+                            cartItem.getPrice(),
+                            cartItem.getSubtotal(),
+                            cartItem.getImageUrl()
+                    ))
+                    .collect(Collectors.toList());
+
+            // Tạo CartResponse
+            CartResponse cartResponse = new CartResponse(
+                    cart.getId(),
+                    cart.getTotalItem(),
+                    cart.getTotalPrice(),
+                    cart.getCreatedDate(),
+                    cart.getLastModifiedDate(),
+                    cartItemResponses
+            );
+
+            ResponseObject response = ResponseObject.builder()
+                    .status("SUCCESS")
+                    .data(cartResponse)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to get cart items.").build());
         }
     }
     @PutMapping("/updatePassword")
@@ -428,5 +536,17 @@ public class UserController {
     public ResponseEntity<?> getById(@PathVariable Long userId){
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
+    @DeleteMapping("/delete/cartItem/{id}")
+    public ResponseEntity<String> deleteCartItem(@PathVariable Long id){
+        String result = cartItemService.deleteCartItem(id);
+        if (result.equals("Delete CartItem Successfully...")) {
+            return ResponseEntity.ok(result);
+        } else if (result.equals("Unauthorized to delete this address")) {
+            return ResponseEntity.status(403).body(result);
+        } else {
+            return ResponseEntity.status(500).body(result);
+        }
     }
 }

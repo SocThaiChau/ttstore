@@ -30,8 +30,8 @@ public class CartItem implements Serializable {
     @Column(name = "imageUrl")
     private String imageUrl;
 
-    @OneToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @ManyToOne
