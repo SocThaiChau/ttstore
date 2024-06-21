@@ -58,6 +58,9 @@ public class UserController {
     private final UserMapper userMapper;
 
     @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
     private CartItemService cartItemService;
 
     @Autowired
@@ -548,5 +551,39 @@ public class UserController {
         } else {
             return ResponseEntity.status(500).body(result);
         }
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<ResponseObject> getCategories() {
+        try {
+            List<Category> categories = categoryService.getAllCategories();
+            List<Map<String, Object>> categoryData = getCategoryData(categories);
+
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status("SUCCESS")
+                    .data(categoryData)
+                    .message("Categories retrieved successfully!")
+                    .build());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                    .body(ResponseObject.builder()
+                            .status("ERROR")
+                            .message(exception.getMessage())
+                            .build());
+        }
+    }
+    private List<Map<String, Object>> getCategoryData(List<Category> categories) {
+        List<Map<String, Object>> categoryData = new ArrayList<>();
+
+        for (Category category : categories) {
+            Map<String, Object> categoryInfo = new HashMap<>();
+            categoryInfo.put("id", category.getId());
+            categoryInfo.put("name", category.getName());
+            categoryInfo.put("imageUrl",category.getImage());
+
+            categoryData.add(categoryInfo);
+        }
+
+        return categoryData;
     }
 }

@@ -2,7 +2,9 @@ package com.example.back_end.service.impl;
 
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.model.entity.*;
+import com.example.back_end.model.request.OrderItemRequest;
 import com.example.back_end.model.request.OrderRequest;
+import com.example.back_end.model.response.CartItemResponse;
 import com.example.back_end.model.response.OrderItemResponse;
 import com.example.back_end.model.response.OrderResponse;
 import com.example.back_end.model.response.ProductResponse;
@@ -37,6 +39,8 @@ public class OrderService {
     private ProductRepository productRepository;
     @Autowired
     private ProductService productService;
+    @Autowired
+    private CartRepository cartRepository;
 
     public List<OrderResponse> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
@@ -107,66 +111,71 @@ public class OrderService {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
             Long userId = currentUser.getId();
+
             if (userId == null) {
                 throw new RuntimeException("User ID is null");
             }
 
-            // Find user from UserRepository
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
             Address address = addressRepository.findById(orderRequest.getIdAddress())
                     .orElseThrow(() -> new RuntimeException("Address not found"));
 
-            // Create order and set its properties
+            // Xóa nhưng Order đã tạo trước đó mà chưa xác nhận đặt hàng
+            List<Order> oldOrder = orderRepository.findByUserId(userId);
+            for (Order order : oldOrder) {
+                if ("PENDING".equalsIgnoreCase(order.getStatus())) {
+                    // Xóa các OrderItem liên quan
+                    orderItemRepository.deleteByOrderId(order.getId());
+                    // Xóa Order
+                    orderRepository.delete(order);
+                }
+            }
+
             Order order = new Order();
-//            order.setNote(orderRequest.getNote());
-            order.setIsPaidBefore(false);
-            order.setStatus("Đang chờ xác nhận");
-            order.setTotal(0.0); // Initialize total to 0.0
+            order.setNote(orderRequest.getNote());
+            order.setIsPaidBefore(orderRequest.getIsPaidBefore());
+            order.setStatus("PENDING");
+            order.setTotal(0.0);
             order.setTotalItem(0);
-            order.setPaymentType("Thanh toán khi nhận hàng");
+            order.setPaymentType(orderRequest.getPaymentType());
             LocalDateTime localDateTime = LocalDateTime.now();
             Date createdDate = ConvertToDate.convertToDateViaSqlTimestamp(localDateTime);
             order.setCreatedDate(createdDate);
             order.setUser(user);
             order.setAddress(address);
 
-            // Save order to get its ID
             Order savedOrder = orderRepository.save(order);
 
-            final double[] totalOrderAmount = {0.0}; // Use array to hold the total amount
-            final int[] totalOrderItems = {0}; // Use array to hold the total item count
+            final double[] totalOrderAmount = {0.0};
+            final int[] totalOrderItems = {0};
 
-            // Create order items list<OrderItem>
-            List<OrderItem> items = orderRequest.getOrderItems().stream().map(
-                    item -> {
-                        Product product = productService.getProductById(item.getProductId());
-                        if (product == null) {
-                            throw new RuntimeException("Product not found with ID: " + item.getProductId());
-                        }
+            List<OrderItem> items = orderRequest.getCartItems().stream().map(
+                    itemRequest -> {
+                        Product product = productService.getProductById(itemRequest.getProductId());
 
                         OrderItem orderItem = new OrderItem();
-                        orderItem.setPrice(product.getPrice());
-                        orderItem.setQuantity(item.getQuantity());
-                        double subtotal = product.getPrice() * item.getQuantity();
-                        orderItem.setSubtotal(subtotal);
-                        totalOrderAmount[0] += subtotal; // Add subtotal to totalOrderAmount
-                        totalOrderItems[0] += item.getQuantity(); // Add item quantity to totalOrderItems
                         orderItem.setProduct(product);
-                        orderItem.setOrder(savedOrder); // Set order for the item
+                        orderItem.setQuantity(itemRequest.getQuantity());
+                        orderItem.setPrice(product.getPromotionalPrice());
+                        orderItem.setImageUrl(product.getUrl());
+                        double subtotal = product.getPromotionalPrice() * itemRequest.getQuantity();
+                        orderItem.setSubtotal(subtotal);
+
+                        totalOrderAmount[0] += subtotal;
+                        totalOrderItems[0] += itemRequest.getQuantity();
+                        orderItem.setOrder(savedOrder);
 
                         return orderItem;
                     }
-            ).toList();
+            ).collect(Collectors.toList());
 
-            // Save each order item
             orderItemRepository.saveAll(items);
 
-            // Update order with total amount and total items
             savedOrder.setTotal(totalOrderAmount[0]);
             savedOrder.setTotalItem(totalOrderItems[0]);
-            orderRepository.save(savedOrder); // Save updated order
+            orderRepository.save(savedOrder);
 
             return "Create Order Successfully...";
         } catch (Exception e) {
@@ -175,6 +184,51 @@ public class OrderService {
         }
     }
 
+    @Transactional
+    public String confirmOrder(Long orderId, OrderRequest orderRequest) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) authentication.getPrincipal();
+            Long userId = currentUser.getId();
+
+            if (userId == null) {
+                throw new RuntimeException("User ID is null");
+            }
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+            if (!order.getUser().getId().equals(currentUser.getId())) {
+                return "Unauthorized to confirm this order";
+            }
+
+            if (!order.getStatus().equals("PENDING")) {
+                throw new RuntimeException("Order is not in a valid state to be confirmed");
+            }
+
+            order.setPaymentType(orderRequest.getPaymentType());
+            order.setStatus("CONFIRMED");
+            orderRepository.save(order);
+
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+            for (OrderItem orderItem : orderItems) {
+                Product product = orderItem.getProduct();
+                product.setQuantityAvailable(product.getQuantityAvailable() - orderItem.getQuantity());
+                product.setSold(product.getSold() == null ? orderItem.getQuantity() : product.getSold() + orderItem.getQuantity());
+                productRepository.save(product);
+            }
+
+            Cart cart = cartRepository.findByUserId(userId);
+            cart.getCartItemList().removeIf(cartItem ->
+                    orderItems.stream().anyMatch(orderItem -> orderItem.getProduct().getId().equals(cartItem.getProduct().getId())));
+            cartRepository.save(cart);
+
+            return "Order Confirmed Successfully...";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error while confirming order: " + e.getMessage();
+        }
+    }
     public String updateOrder(Long id, OrderRequest orderRequest){
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

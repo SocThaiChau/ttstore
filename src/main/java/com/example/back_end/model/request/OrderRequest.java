@@ -1,9 +1,7 @@
 package com.example.back_end.model.request;
 
-import com.example.back_end.model.entity.Address;
-import com.example.back_end.model.entity.OrderItem;
-import com.example.back_end.model.entity.Review;
-import com.example.back_end.model.entity.User;
+import com.example.back_end.model.entity.*;
+import com.example.back_end.model.response.CartItemResponse;
 import com.example.back_end.model.response.OrderItemResponse;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,4 +28,6 @@ public class OrderRequest implements Serializable {
     private String status;
     private String paymentType;
     private List<OrderItemRequest> orderItems;
+    private List<CartItemResponse> cartItems;
+
 }

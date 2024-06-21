@@ -5,6 +5,7 @@ import com.example.back_end.model.entity.OrderItem;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.model.request.OrderItemRequest;
 import com.example.back_end.model.request.OrderRequest;
+import com.example.back_end.model.response.CartItemResponse;
 import com.example.back_end.model.response.OrderResponse;
 import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.service.impl.OrderService;
@@ -41,22 +42,11 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-
     @PostMapping("/addOrder")
     public ResponseEntity<String> addOrder(@RequestBody OrderRequest orderRequest) {
         try {
             String result = orderService.addOrder(orderRequest);
             if (result.equals("Create Order Successfully...")) {
-                // Cập nhật lại số lượng sản phẩm và số lượng đã bán
-                for (OrderItemRequest item : orderRequest.getOrderItems()) {
-                    Product product = productService.getProductById(item.getProductId());
-                    if (product == null) {
-                        return ResponseEntity.status(400).body("Product not found with ID: " + item.getProductId());
-                    }
-                    product.setQuantityAvailable(product.getQuantityAvailable() - item.getQuantity());
-                    product.setSold(product.getSold() == null ? item.getQuantity() : product.getSold() + item.getQuantity());
-                    productRepository.save(product);
-                }
                 return ResponseEntity.ok(result);
             } else {
                 return ResponseEntity.status(500).body(result);
@@ -66,6 +56,23 @@ public class OrderController {
             return ResponseEntity.status(500).body("Error while creating order: " + e.getMessage());
         }
     }
+
+    @PostMapping("/confirmOrder/{orderId}")
+    public ResponseEntity<String> confirmOrder(@PathVariable Long orderId, @RequestBody OrderRequest orderRequest) {
+        try {
+            System.out.println("paymentType: " + orderRequest.getPaymentType());
+            String result = orderService.confirmOrder(orderId, orderRequest);
+            if (result.equals("Order Confirmed Successfully...")) {
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(500).body(result);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error while confirming order: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/updateOrder/{id}")
     public ResponseEntity<String> updateOrder(@PathVariable Long id, @RequestBody OrderRequest orderRequest){
         String result = orderService.updateOrder(id,orderRequest);
