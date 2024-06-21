@@ -1,9 +1,6 @@
 package com.example.back_end.model.response;
 
-import com.example.back_end.model.entity.Product;
-import com.example.back_end.model.entity.Review;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,11 +15,18 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderItemResponse implements Serializable {
+public class CartResponse implements Serializable {
     private Long id;
-    private Integer quantity;
-    private Long productId;  // Only product ID
-    private Double subtotal;
+    private Integer totalItem;
+    private Double totalPrice;
+
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
+
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastModifiedDate;
+
+    private List<CartItemResponse> cartItems;
 }

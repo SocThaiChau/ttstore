@@ -22,28 +22,6 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderItemRequest implements Serializable {
 
-    private Long id;
-
+    private Long productId;
     private Integer quantity;
-
-    private Double price;
-
-    private Double subtotal;
-
-    private String imageUrl;
-
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdDate;
-
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date lastModifiedDate;
-
-    private Order order;
-
-    private List<Review> orderItemReviewList;
-
-    private Product product;
-
 }
