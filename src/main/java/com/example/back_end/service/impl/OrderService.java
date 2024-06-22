@@ -2,12 +2,9 @@ package com.example.back_end.service.impl;
 
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.model.entity.*;
-import com.example.back_end.model.request.OrderItemRequest;
 import com.example.back_end.model.request.OrderRequest;
-import com.example.back_end.model.response.CartItemResponse;
 import com.example.back_end.model.response.OrderItemResponse;
 import com.example.back_end.model.response.OrderResponse;
-import com.example.back_end.model.response.ProductResponse;
 import com.example.back_end.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -254,6 +251,37 @@ public class OrderService {
         }catch (Exception e){
             e.printStackTrace();
             return "Error while update order!!!";
+        }
+    }
+
+    @Transactional
+    public List<OrderResponse> getOrdersByUserId(Long userId) {
+        try {
+            List<Order> orders = orderRepository.findByUserId(userId);
+            return orders.stream()
+                    .map(this::convertToOrderResponse)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error while fetching orders for user ID: " + userId + ". " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public Optional<OrderResponse> getPendingOrdersByUserId() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User currentUser = (User) authentication.getPrincipal();
+            Long userId = currentUser.getId();
+
+            List<OrderResponse> orderResponse = getOrdersByUserId(userId);
+
+            return orderResponse.stream()
+                    .filter(order -> "PENDING".equals(order.getStatus()))
+                    .findFirst();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error while fetching and deleting pending orders for user " + ". " + e.getMessage());
         }
     }
 }
