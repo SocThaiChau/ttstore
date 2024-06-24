@@ -1,6 +1,7 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.exception.ProductException;
+import com.example.back_end.model.dto.SalesDTO;
 import com.example.back_end.model.entity.Image;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.repository.OrderItemRepository;
@@ -77,6 +78,7 @@ public class ProductService implements IproductService {
         return productRepository.findByUser_IdAndSoldGreaterThan(userId, 0).stream()
                 .mapToInt(Product::getSold)
                 .sum();
+
     }
 
     public double getTotalRevenueByUser(Long userId) {
@@ -84,12 +86,34 @@ public class ProductService implements IproductService {
         return products.stream()
                 .mapToDouble(p -> p.getSold() * p.getPrice())
                 .sum();
+
     }
-    public Long getProductSoldByUser(Long userId){
-        return productRepository.getProductSoldByUser(userId);
+    public SalesDTO getSalesByUserAndProduct(Long userId, Long productId) throws ProductException {
+        List<Object[]> salesData = productRepository.getSalesByUserAndProduct(userId, productId);
+        if (salesData.isEmpty()) {
+            throw new ProductException("No product found with ID: " + productId + " for user with ID: " + userId);
+        }
+        Object[] data = salesData.get(0);
+        SalesDTO salesDTO = new SalesDTO();
+        salesDTO.setProductName((String) data[0]);
+        salesDTO.setTotalSales((long) data[1]);
+        salesDTO.setTotalRevenue((double) data[2]);
+
+        return salesDTO;
     }
-    public Double getRevenueByUser(Long userId) {
-        return productRepository.getRevenueByUser(userId);
+    public List<SalesDTO> getSalesByUser(Long userId) {
+        List<Object[]> salesData = productRepository.getSalesByUser(userId);
+        List<SalesDTO> salesDTOs = new ArrayList<>();
+
+        for (Object[] data : salesData) {
+            SalesDTO salesDTO = new SalesDTO();
+            salesDTO.setProductName((String) data[0]);
+            salesDTO.setTotalSales((long) data[1]);
+            salesDTO.setTotalRevenue((double) data[2]);
+            salesDTOs.add(salesDTO);
+        }
+
+        return salesDTOs;
     }
 
     public void addImagesToProduct(Product product, List<Image> images) {

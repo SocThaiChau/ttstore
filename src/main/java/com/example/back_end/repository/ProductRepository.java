@@ -20,12 +20,11 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:keyword%")
     List<Product> findByKeyword(@Param("keyword") String keyword);
     List<Product> findByUser_IdAndSoldGreaterThan(Long userId, Integer sold);
-    @Query("SELECT p.sold FROM Product p WHERE p.user.id = :userId")
-    Long getProductSoldByUser(Long userId);
-//    @Query("SELECT SUM(p.price * p.sold) FROM product p WHERE p.userId = :userId AND p.sold > 0")
-//    Double getTotalRevenueByUserId(@Param("userId") Long userId);
-    @Query("SELECT SUM(p.sold * p.price) FROM Product p WHERE p.user.id = :userId")
-    Double getTotalRevenueByUser(Long userId);
-    @Query("SELECT (p.sold * p.price) FROM Product p WHERE p.user.id = :userId")
-    Double getRevenueByUser(Long userId);
+    @Query("SELECT p.name, SUM(p.sold) AS totalSales, SUM(p.price * p.sold) AS totalRevenue " +
+            "FROM Product p WHERE p.id = :productId AND p.user.id = :userId GROUP BY p.name")
+    List<Object[]> getSalesByUserAndProduct(@Param("userId") Long userId, @Param("productId") Long productId);
+    @Query("SELECT p.name, SUM(p.sold) AS totalSales, SUM(p.price * p.sold) AS totalRevenue " +
+            "FROM Product p WHERE p.user.id = :userId GROUP BY p.name")
+    List<Object[]> getSalesByUser(@Param("userId") Long userId);
+
 }

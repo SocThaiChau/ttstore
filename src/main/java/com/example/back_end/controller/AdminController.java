@@ -2,9 +2,12 @@ package com.example.back_end.controller;
 
 import com.example.back_end.auth.JwtService;
 import com.example.back_end.config.ExtractUser;
+import com.example.back_end.exception.ErrorResponse;
+import com.example.back_end.exception.ProductException;
 import com.example.back_end.exception.UnauthorizedException;
 import com.example.back_end.exception.UserException;
 import com.example.back_end.model.dto.NotificationDTO;
+import com.example.back_end.model.dto.SalesDTO;
 import com.example.back_end.model.dto.SenderDto;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
@@ -362,20 +365,32 @@ public class AdminController {
         response.put("totalRevenue", totalRevenue);
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/products/revenue")
-    public ResponseEntity<Map<String, Double>> getRevenue(HttpServletRequest request) throws UserException {
-        User user = authenticateUser(request);
-        Double Revenue = productService.getRevenueByUser(user.getId());
-        Map<String, Double> response = new HashMap<>();
-        response.put("Revenue", Revenue);
-        return ResponseEntity.ok(response);
+    @GetMapping("/sales/{productId}")
+    public ResponseEntity<?> getSalesByUserAndProduct(@PathVariable Long productId, HttpServletRequest request) {
+        try {
+            User user = authenticateUser(request);
+            SalesDTO salesDTO = productService.getSalesByUserAndProduct(user.getId(), productId);
+            return ResponseEntity.ok(salesDTO);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (ProductException e) {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .message("Product not found")
+                    .description(e.getMessage())
+                    .timestamp(new Date())
+                    .build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
     }
-    @GetMapping("/products/sold")
-    public ResponseEntity<Map<String, Long>> getProductQuantity(HttpServletRequest request) throws UserException {
-        User user = authenticateUser(request);
-        Long sold = productService.getProductSoldByUser(user.getId());
-        Map<String, Long> response = new HashMap<>();
-        response.put("Sold", sold);
-        return ResponseEntity.ok(response);
+    @GetMapping("/sales")
+    public ResponseEntity<List<SalesDTO>> getSalesByUser(HttpServletRequest request) {
+        try {
+            User user = authenticateUser(request);
+            List<SalesDTO> salesDTOs = productService.getSalesByUser(user.getId());
+            return ResponseEntity.ok(salesDTOs);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }
