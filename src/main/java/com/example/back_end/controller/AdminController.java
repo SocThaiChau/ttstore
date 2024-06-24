@@ -339,20 +339,27 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
-    @GetMapping("/products/total-revenue")
-    public ResponseEntity<Map<String, Double>> getTotalRevenue(HttpServletRequest request) throws UserException {
+//    @GetMapping("/products/sold-products")
+//    public ResponseEntity<Integer> getTotalSoldProducts( HttpServletRequest request) {
+//        try {
+//            User user = authenticateUser(request);
+//            int totalSoldProducts = productService.getTotalSoldProductsByUser(user.getId());
+//            //String response = "Tổng số lượng sản phẩm đã bán được: " + totalSoldProducts;
+//            return ResponseEntity.ok(totalSoldProducts);
+//        } catch (UserException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+//    }
+    @GetMapping("/user/sales")
+    public ResponseEntity<Map<String, Object>> getTotalProductSales(HttpServletRequest request) throws UserException {
         User user = authenticateUser(request);
-        Double totalRevenue = productService.getTotalRevenueByUser(user.getId());
-        Map<String, Double> response = new HashMap<>();
+        Long userId = user.getId();
+        int totalSales = productService.getTotalSoldProductsByUser(userId);
+        double totalRevenue = productService.getTotalRevenueByUser(userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalSales", totalSales);
         response.put("totalRevenue", totalRevenue);
-        return ResponseEntity.ok(response);
-    }
-    @GetMapping("/products/total-sold")
-    public ResponseEntity<Map<String, Long>> getTotalProductQuantity(HttpServletRequest request) throws UserException {
-        User user = authenticateUser(request);
-        Long totalSold = productService.getTotalProductSoldByUser(user.getId());
-        Map<String, Long> response = new HashMap<>();
-        response.put("totalSold", totalSold);
         return ResponseEntity.ok(response);
     }
     @GetMapping("/products/revenue")

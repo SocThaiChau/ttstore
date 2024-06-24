@@ -19,10 +19,11 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Optional<Product> findById(Long id);
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:keyword%")
     List<Product> findByKeyword(@Param("keyword") String keyword);
-    @Query("SELECT SUM(p.sold) FROM Product p WHERE p.user.id = :userId")
-    Long getTotalProductSoldByUser(Long userId);
+    List<Product> findByUser_IdAndSoldGreaterThan(Long userId, Integer sold);
     @Query("SELECT p.sold FROM Product p WHERE p.user.id = :userId")
     Long getProductSoldByUser(Long userId);
+//    @Query("SELECT SUM(p.price * p.sold) FROM product p WHERE p.userId = :userId AND p.sold > 0")
+//    Double getTotalRevenueByUserId(@Param("userId") Long userId);
     @Query("SELECT SUM(p.sold * p.price) FROM Product p WHERE p.user.id = :userId")
     Double getTotalRevenueByUser(Long userId);
     @Query("SELECT (p.sold * p.price) FROM Product p WHERE p.user.id = :userId")

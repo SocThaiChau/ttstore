@@ -72,8 +72,18 @@ public class ProductService implements IproductService {
     }
     public Product createProduct(Product product){return productRepository.save(product);}
     // In ProductService
-    public Long getTotalProductSoldByUser(Long userId) {
-        return productRepository.getTotalProductSoldByUser(userId);
+
+    public int getTotalSoldProductsByUser(Long userId) {
+        return productRepository.findByUser_IdAndSoldGreaterThan(userId, 0).stream()
+                .mapToInt(Product::getSold)
+                .sum();
+    }
+
+    public double getTotalRevenueByUser(Long userId) {
+        List<Product> products = productRepository.findByUser_IdAndSoldGreaterThan(userId, 0);
+        return products.stream()
+                .mapToDouble(p -> p.getSold() * p.getPrice())
+                .sum();
     }
     public Long getProductSoldByUser(Long userId){
         return productRepository.getProductSoldByUser(userId);
@@ -180,8 +190,5 @@ public class ProductService implements IproductService {
         response.setUserId(product.getUser().getId());
         // Set images and other related fields if needed
         return response;
-    }
-    public Double getTotalRevenueByUser(Long userId) {
-        return productRepository.getTotalRevenueByUser(userId);
     }
 }
