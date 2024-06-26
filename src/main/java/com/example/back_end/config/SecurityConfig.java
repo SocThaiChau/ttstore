@@ -32,9 +32,6 @@ public class SecurityConfig {
 
                 .requestMatchers(HttpMethod.GET, "/admin/user", "/users/checkPassword").permitAll() // Allow access to /admin/user without authentication origin/dev
 
-//                .requestMatchers(HttpMethod.GET, "/**")
-//                .permitAll()
-
                 .requestMatchers("/login",
                         "/send-mail",
                         "/reset-password",

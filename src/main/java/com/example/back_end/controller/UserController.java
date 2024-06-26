@@ -159,6 +159,51 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+    @GetMapping("/getProductBySold")
+    public ResponseEntity<ResponseObject> getProductBySold() {
+        try {
+            // Assume productService retrieves all products and returns List<ProductResponse>
+            List<ProductResponse> products = productService.findTop8ByOrderBySoldDesc();
+
+            // Construct success response
+            ResponseObject response = ResponseObject.builder()
+                    .status("Success")
+                    .data(products)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Handle exception and return error response
+            ResponseObject errorResponse = ResponseObject.builder()
+                    .status("Error")
+                    .message(e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/getProductByDate")
+    public ResponseEntity<ResponseObject> getProductByDate() {
+        try {
+            // Assume productService retrieves all products and returns List<ProductResponse>
+            List<ProductResponse> products = productService.findTop8ByOrderByLastModifiedDateDesc();
+
+            // Construct success response
+            ResponseObject response = ResponseObject.builder()
+                    .status("Success")
+                    .data(products)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Handle exception and return error response
+            ResponseObject errorResponse = ResponseObject.builder()
+                    .status("Error")
+                    .message(e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 
     @GetMapping("/profile")
     @ResponseBody
@@ -465,8 +510,8 @@ public class UserController {
             CartItem newCartItem = new CartItem();
             newCartItem.setProduct(product);
             newCartItem.setQuantity(addToCartRequest.getQuantity());
-            newCartItem.setPrice(product.getPrice());
-            newCartItem.setSubtotal(product.getPrice() * addToCartRequest.getQuantity());
+            newCartItem.setPrice(product.getPromotionalPrice());
+            newCartItem.setSubtotal(product.getPromotionalPrice() * addToCartRequest.getQuantity());
             newCartItem.setImageUrl(product.getUrl());
             newCartItem.setCart(cart);
 

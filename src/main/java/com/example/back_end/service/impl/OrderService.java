@@ -78,7 +78,9 @@ public class OrderService {
         response.setLastModifiedBy(order.getLastModifiedBy());
         response.setCreatedDate(order.getCreatedDate());
         response.setLastModifiedDate(order.getLastModifiedDate());
-        response.setAddressId(order.getAddress().getId());  // Only set address ID
+        if(order.getAddress() != null){
+            response.setAddressId(order.getAddress().getId());  // Only set address ID
+        }
         response.setUserId(order.getUser().getId());  // Only set user ID
 
         // Convert OrderItems to OrderItemResponses
@@ -116,9 +118,6 @@ public class OrderService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-            Address address = addressRepository.findById(orderRequest.getIdAddress())
-                    .orElseThrow(() -> new RuntimeException("Address not found"));
-
             // Xóa nhưng Order đã tạo trước đó mà chưa xác nhận đặt hàng
             List<Order> oldOrder = orderRepository.findByUserId(userId);
             for (Order order : oldOrder) {
@@ -141,7 +140,6 @@ public class OrderService {
             Date createdDate = ConvertToDate.convertToDateViaSqlTimestamp(localDateTime);
             order.setCreatedDate(createdDate);
             order.setUser(user);
-            order.setAddress(address);
 
             Order savedOrder = orderRepository.save(order);
 
@@ -152,6 +150,7 @@ public class OrderService {
                     itemRequest -> {
                         Product product = productService.getProductById(itemRequest.getProductId());
 
+                        System.out.println("productId: " + itemRequest.getProductId());
                         OrderItem orderItem = new OrderItem();
                         orderItem.setProduct(product);
                         orderItem.setQuantity(itemRequest.getQuantity());
@@ -194,6 +193,9 @@ public class OrderService {
             Order order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
 
+            Address address = addressRepository.findById(orderRequest.getIdAddress())
+                    .orElseThrow(() -> new RuntimeException("Address not found"));
+
             if (!order.getUser().getId().equals(currentUser.getId())) {
                 return "Unauthorized to confirm this order";
             }
@@ -204,6 +206,7 @@ public class OrderService {
 
             order.setPaymentType(orderRequest.getPaymentType());
             order.setStatus("CONFIRMED");
+            order.setAddress(address);
             orderRepository.save(order);
 
             List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
@@ -218,6 +221,14 @@ public class OrderService {
             Cart cart = cartRepository.findByUserId(userId);
             cart.getCartItemList().removeIf(cartItem ->
                     orderItems.stream().anyMatch(orderItem -> orderItem.getProduct().getId().equals(cartItem.getProduct().getId())));
+
+            int totalItem = cart.getCartItemList().stream().mapToInt(CartItem::getQuantity).sum();
+            double totalPrice = cart.getCartItemList().stream().mapToDouble(item -> item.getSubtotal()).sum();
+
+// Cập nhật lại các giá trị mới cho Cart
+            cart.setTotalItem(totalItem);
+            cart.setTotalPrice(totalPrice);
+
             cartRepository.save(cart);
 
             return "Order Confirmed Successfully...";

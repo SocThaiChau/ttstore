@@ -83,6 +83,21 @@ public class ProductService implements IproductService {
                 .collect(Collectors.toList());
     }
 
+    public List<ProductResponse> findTop8ByOrderBySoldDesc() {
+        List<Product> products = productRepository.findTop8ByOrderBySoldDesc();
+        // Chuyển đổi danh sách Product sang ProductResponse nếu cần thiết
+        return products.stream()
+                .map(this::mapToProductResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductResponse> findTop8ByOrderByLastModifiedDateDesc() {
+        List<Product> products = productRepository.findTop8ByOrderByLastModifiedDateDesc();
+        // Chuyển đổi danh sách Product sang ProductResponse nếu cần thiết
+        return products.stream()
+                .map(this::mapToProductResponse)
+                .collect(Collectors.toList());
+    }
     private ProductResponse mapToProductResponse(Product product) {
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
@@ -104,6 +119,8 @@ public class ProductService implements IproductService {
         response.setLastModifiedDate(product.getLastModifiedDate());
         response.setUrl(product.getUrl());
         response.setUserId(product.getUser().getId());
+        response.setCategoryId(product.getCategory().getId());
+        response.setCategoryName(product.getCategory().getName());
 
         // Map images
         if (product.getImages() != null) {

@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findBydescriptionContaining(String keyword);
     List<Product> findByUserId(Long userId);
+    List<Product> findTop8ByOrderBySoldDesc();
+    List<Product> findTop8ByOrderByLastModifiedDateDesc();
     Optional<Product> findById(Long id);
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:keyword%")
     List<Product> findByKeyword(@Param("keyword") String keyword);

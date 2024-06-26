@@ -4,6 +4,7 @@ import com.example.back_end.model.entity.Address;
 import com.example.back_end.model.entity.Order;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.request.AddressRequest;
+import com.example.back_end.model.response.AddressResponse;
 import com.example.back_end.model.response.OrderResponse;
 import com.example.back_end.repository.AddressRepository;
 import com.example.back_end.repository.UserRepository;
@@ -45,7 +46,7 @@ public class AddressService {
             address.setAddressUser(user);
 
             addressRepository.save(address);
-            return "Create Addres Successfully...";
+            return "Create Address Successfully...";
         }catch (Exception e){
             e.printStackTrace();
             return "Error while creating address!!!";
@@ -61,7 +62,7 @@ public class AddressService {
     }
 
     @Transactional
-    public List<Address> getAddressByCurrentUser() {
+    public List<AddressResponse> getAddressByCurrentUser() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -71,12 +72,32 @@ public class AddressService {
                 throw new RuntimeException("User ID is null");
             }
 
-            return addressRepository.findByAddressUser_Id(userId);
+            List<Address> addresses = addressRepository.findByAddressUser_Id(userId);
+
+            // Chuyển đổi từ Address sang AddressResponse
+            return addresses.stream()
+                    .map(this::convertToAddressResponse)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Error while fetching orders for the current user: " + e.getMessage());
+            throw new RuntimeException("Error while fetching addresses for the current user: " + e.getMessage());
         }
     }
+
+    private AddressResponse convertToAddressResponse(Address address) {
+        return new AddressResponse(
+                address.getId(),
+                address.getFullName(),
+                address.getPhoneNumber(),
+                address.getCity(),
+                address.getDistrict(),
+                address.getWard(),
+                address.getOrderDetail(),
+                address.getIsDefault(),
+                address.getAddressUser().getId().toString()
+        );
+    }
+
     public String updateAddress(Long id, AddressRequest addressRequest) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

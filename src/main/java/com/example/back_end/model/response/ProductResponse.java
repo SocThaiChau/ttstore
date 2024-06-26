@@ -63,4 +63,7 @@ public class ProductResponse implements Serializable {
 
     private List<ReviewResponse> productReviewList;
 
+    private Long categoryId;
+
+    private String categoryName;
 }

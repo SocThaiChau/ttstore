@@ -10,6 +10,7 @@ import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.ProductRequest;
 import com.example.back_end.model.request.UserRequest;
+import com.example.back_end.model.response.CategoryResponse;
 import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
@@ -78,21 +79,37 @@ public class AdminController {
         List<User> userList = userService.findAll();
         return ResponseEntity.ok(userMapper.toUserListDTO(userList));
     }
+
+    @GetMapping("/category/{id}")
+    //@PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<?> getCategory(@PathVariable Long id){
+        Category category = userService.findCategoryById(id);
+
+        if (category == null) {
+            return ResponseEntity.status(404).body("Category not found");
+        }
+
+        CategoryResponse categoryResponse = new CategoryResponse();
+        categoryResponse.setId(category.getId());
+        categoryResponse.setName(category.getName());
+        categoryResponse.setImage(category.getImage());
+        // Thêm các trường khác nếu cần
+
+        return ResponseEntity.ok(categoryResponse);
+    }
+
     @PostMapping("/product/create")
-    public ResponseEntity<ResponseObject> createProduct(@RequestBody @Valid Product product, HttpServletRequest request) throws UserException {
+    public ResponseEntity<ResponseObject> createProduct(@RequestBody @Valid ProductRequest productRequest, HttpServletRequest request) throws UserException {
         try {
             User user = authenticateUser(request);
+            System.out.println("đã vào thêm sản phẩm");
+            // Chuyển đổi ProductRequest sang Product
+            Product product = convertToProduct(productRequest, user);
 
-            Long userId = user.getId();
-            String username = user.getName();
-
-
-            Long categoryId = product.getCategory().getId();
+            Long categoryId = productRequest.getCategoryId();
             Category category = categoryService.getCategoryById(categoryId); // Lấy thông tin Category dựa trên categoryId
             product.setCategory(category);
-            product.setUser(user);
-            product.setCreatedDate(new Date());
-            product.setUrl(product.getUrl());
+
             Product createProduct = productService.createProduct(product);
 
             Map<String, Object> dataproduct = new LinkedHashMap<>();
@@ -116,85 +133,29 @@ public class AdminController {
             return new ResponseEntity<>(ResponseObject.builder().message(e.getMessage()).status("ERROR").build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//    public ResponseEntity<ResponseObject> createProduct(@RequestBody @Valid ProductRequest productRequest, HttpServletRequest request) throws UserException {
-//        try {
-//            User user = authenticateUser(request);
-//            Long userId = user.getId();
-//            String username = user.getName();
-//
-//            Category category = categoryService.getCategoryById(productRequest.getCategory().getId());
-//            Product product = new Product();
-//            product.setName(productRequest.getName());
-//            product.setDescription(productRequest.getDescription());
-//            product.setPrice(productRequest.getPrice());
-//            product.setPromotionalPrice(productRequest.getPromotionalPrice());
-//            product.setQuantity(productRequest.getQuantity());
-//            product.setQuantityAvailable(productRequest.getQuantityAvailable());
-//            product.setNumberOfRating(productRequest.getNumberOfRating());
-//            product.setFavoriteCount(productRequest.getFavoriteCount());
-//            product.setSold(productRequest.getSold());
-//            product.setIsActive(productRequest.getIsActive());
-//            product.setIsSelling(productRequest.getIsSelling());
-//            product.setRating(productRequest.getRating());
-//            product.setCreatedBy(username);
-//            product.setCreatedDate(new Date());
-//            product.setCategory(category);
-//            product.setUser(user);
-//            product.setImages(productRequest.getImages());
-//
-//            Product createdProduct = productService.createProduct(product);
-//
-//            // Adding images after creating the product
-//            if (productRequest.getImages() != null) {
-//                List<Image> images = productRequest.getImages().stream()
-//                        .map(imgRequest -> {
-//                            Image image = new Image();
-//                            image.setUrl(imgRequest.getUrl());
-//                            image.setProduct(createdProduct);
-//                            return image;
-//                        }).collect(Collectors.toList());
-//                productService.addImagesToProduct(createdProduct, images);
-//            }
-//            // Fetch the updated product with images
-//            Product newProduct = productService.getProductById(createdProduct.getId());
-//
-//            // Set the URL of the first image
-//            if (newProduct.getImages() != null && !newProduct.getImages().isEmpty()) {
-//                newProduct.setUrl(createdProduct.getImages().get(0).getUrl());
-//                productService.createProduct(createdProduct);
-//            }
-//
-//            Map<String, Object> dataproduct = new LinkedHashMap<>();
-//            dataproduct.put("name", createdProduct.getName());
-//            dataproduct.put("description", createdProduct.getDescription());
-//            dataproduct.put("price", createdProduct.getPrice());
-//            dataproduct.put("quantity", createdProduct.getQuantity());
-//            dataproduct.put("quantityAvailable", createdProduct.getQuantityAvailable());
-//            dataproduct.put("categoryId", createdProduct.getCategory().getId());
-//            dataproduct.put("userId", createdProduct.getUser().getId());
-//            dataproduct.put("createdBy", createdProduct.getCreatedBy());
-//            dataproduct.put("createdDate", createdProduct.getCreatedDate());
-//            dataproduct.put("isActive", createdProduct.getIsActive());
-//            dataproduct.put("url", createdProduct.getUrl());
-//
-//            List<Map<String, Object>> imagesResponse = createdProduct.getImages().stream()
-//                    .map(image -> {
-//                        Map<String, Object> imageMap = new LinkedHashMap<>();
-//                        imageMap.put("id", image.getId());
-//                        imageMap.put("url", image.getUrl());
-//                        return imageMap;
-//                    }).collect(Collectors.toList());
-//            dataproduct.put("images", imagesResponse);
-//
-//            ResponseObject response = ResponseObject.builder()
-//                    .status("Success")
-//                    .data(dataproduct)
-//                    .build();
-//            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(ResponseObject.builder().message(e.getMessage()).status("ERROR").build(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+    private Product convertToProduct(ProductRequest productRequest, User user) {
+        Product product = new Product();
+        product.setName(productRequest.getName());
+        product.setDescription(productRequest.getDescription());
+        product.setPrice(productRequest.getPrice());
+        product.setPromotionalPrice(productRequest.getPromotionalPrice());
+        product.setQuantity(productRequest.getQuantity());
+        product.setQuantityAvailable(productRequest.getQuantityAvailable());
+        product.setNumberOfRating(1);
+        product.setFavoriteCount(0);
+        product.setSold(0);
+        product.setIsActive(true);
+        product.setIsSelling(true);
+        product.setRating(1.0f);
+        product.setCreatedBy(user.getName());
+        product.setLastModifiedBy(user.getName());
+        product.setCreatedDate(new Date());
+        product.setLastModifiedDate(new Date());
+        product.setUser(user);
+        product.setUrl(productRequest.getUrl());
+        return product;
+    }
+
     @GetMapping("/product/my-products")
     public ResponseEntity<ResponseObject> getMyProducts(HttpServletRequest request) {
         try {

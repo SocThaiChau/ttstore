@@ -12,4 +12,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // Ví dụ: Tìm kiếm category bằng ID
     Optional<Category> findById(Long categoryId);
+
+    Category findById(long id);
 }
