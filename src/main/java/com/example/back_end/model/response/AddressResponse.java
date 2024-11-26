@@ -30,6 +30,6 @@ public class AddressResponse implements Serializable {
 
     private Boolean isDefault;
 
-    private User user;
+    private String userId;
 
 }

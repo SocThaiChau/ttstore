@@ -28,6 +28,6 @@ public class OrderRequest implements Serializable {
     private String status;
     private String paymentType;
     private List<OrderItemRequest> orderItems;
-    private List<CartItemResponse> cartItems;
+    private List<CartItemRequest> cartItems;
 
 }

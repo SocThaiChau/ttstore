@@ -7,10 +7,8 @@ import com.example.back_end.exception.NotFoundException;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
-import com.example.back_end.repository.AddressRepository;
-import com.example.back_end.repository.EmailService;
-import com.example.back_end.repository.RoleRepository;
-import com.example.back_end.repository.UserRepository;
+import com.example.back_end.model.response.CategoryResponse;
+import com.example.back_end.repository.*;
 import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +42,8 @@ public class UserService implements UserDetailsService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
     @Autowired
     private UserMapper userMapper;
 
@@ -144,6 +144,9 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(Long.valueOf(id)).orElseThrow(()->new UserException("UserNotFound!"));
     }
 
+    public Category  findCategoryById(Long id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
     public String checkDuplicatePhone(User user){
         if(userRepository.findByPhoneNumber(user.getPhoneNumber()).isPresent()){
             return "This phone number is already used by another user!";

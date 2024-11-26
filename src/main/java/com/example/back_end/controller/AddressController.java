@@ -2,6 +2,7 @@ package com.example.back_end.controller;
 
 import com.example.back_end.model.entity.Address;
 import com.example.back_end.model.request.AddressRequest;
+import com.example.back_end.model.response.AddressResponse;
 import com.example.back_end.service.impl.AddressService;
 import com.example.back_end.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,8 @@ public class AddressController {
         return ResponseEntity.ok(addresses);
     }
     @GetMapping("/my-addresses")
-    public ResponseEntity<List<Address>> getAddressesByCurrentUser() {
-        List<Address> addresses = addressService.getAddressByCurrentUser();
+    public ResponseEntity<List<AddressResponse>> getAddressesByCurrentUser() {
+        List<AddressResponse> addresses = addressService.getAddressByCurrentUser();
         return ResponseEntity.ok(addresses);
     }
     @PostMapping("/add")

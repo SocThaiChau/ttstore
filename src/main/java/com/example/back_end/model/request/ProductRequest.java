@@ -56,16 +56,8 @@ public class ProductRequest implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastModifiedDate;
 
-    private User user;
+    private Long categoryId;
+    private String url;
 
-    private List<Image> images;
-
-    private List<Review> productReviewList;
-
-    private OrderItem orderItem;
-
-    private Category category;
-
-    private CartItem cartItem;
 
 }
