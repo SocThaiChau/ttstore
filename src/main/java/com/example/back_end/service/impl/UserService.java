@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.example.back_end.config.ConvertToDate;
 import com.example.back_end.exception.UserException;
 import com.example.back_end.exception.NotFoundException;
+import com.example.back_end.model.dto.user.UserDTO;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
@@ -11,7 +12,9 @@ import com.example.back_end.model.response.CategoryResponse;
 import com.example.back_end.repository.*;
 import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -26,16 +29,19 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.modelmapper.ModelMapper;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @Slf4j
 public class UserService implements UserDetailsService {
+    ModelMapper modelMapper;
     @Autowired
     private UserRepository userRepository;
 
@@ -53,6 +59,7 @@ public class UserService implements UserDetailsService {
     private final Cloudinary cloudinary;
 
 
+
     public List<User> findAll() {
         try {
             List<User> users = userRepository.findAll();
@@ -61,7 +68,16 @@ public class UserService implements UserDetailsService {
             throw ex;
         }
     }
-
+    public List<UserDTO> findAllUser() {
+        try {
+            List<User> users = userRepository.findAll();
+            return users.stream()
+                    .map(user -> modelMapper.map(user, UserDTO.class))
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            throw ex;
+        }
+    }
 
     public User getUserById(Long id){
         return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
@@ -256,11 +272,12 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    @Autowired
-    public UserService(UserRepository userRepository, Cloudinary cloudinary) {
-        this.userRepository = userRepository;
-        this.cloudinary = cloudinary;
-    }
+//    @Autowired
+//    public UserService(UserRepository userRepository, Cloudinary cloudinary) {
+//        this.userRepository = userRepository;
+//        this.cloudinary = cloudinary;
+//        this.modelMapper = new ModelMapper();
+//    }
 
     @Transactional
     public void saveUser(User user) {
@@ -269,5 +286,9 @@ public class UserService implements UserDetailsService {
 
     public User getProductById(Long id) {
         return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
+    }
+
+    private UserDTO mapToDTO(User user) {
+        return modelMapper.map(user, UserDTO.class);
     }
 }

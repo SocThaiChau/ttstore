@@ -1,5 +1,6 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.model.dto.address.AddressDTO;
 import com.example.back_end.model.entity.Address;
 import com.example.back_end.model.request.AddressRequest;
 import com.example.back_end.model.response.AddressResponse;
@@ -20,13 +21,13 @@ public class AddressController {
     private AddressService addressService;
 
     @GetMapping()
-    public ResponseEntity<List<Address>> getAllAddresses() {
-        List<Address> addresses = addressService.findAllAddress();
+    public ResponseEntity<?> getAllAddresses() {
+        List<AddressDTO> addresses = addressService.findListAddress();
         return ResponseEntity.ok(addresses);
     }
     @GetMapping("/my-addresses")
-    public ResponseEntity<List<AddressResponse>> getAddressesByCurrentUser() {
-        List<AddressResponse> addresses = addressService.getAddressByCurrentUser();
+    public ResponseEntity<?> getAddressesByCurrentUser() {
+        List<AddressDTO> addresses = addressService.getAddressByCurrentUser();
         return ResponseEntity.ok(addresses);
     }
     @PostMapping("/add")

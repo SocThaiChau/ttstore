@@ -172,145 +172,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/getAllProduct")
-    public ResponseEntity<ResponseObject> getAllProducts() {
-        try {
-            // Assume productService retrieves all products and returns List<ProductResponse>
-            List<ProductResponse> products = productService.getAllProductsResponse();
 
-            // Construct success response
-            ResponseObject response = ResponseObject.builder()
-                    .status("Success")
-                    .data(products)
-                    .build();
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            // Handle exception and return error response
-            ResponseObject errorResponse = ResponseObject.builder()
-                    .status("Error")
-                    .message(e.getMessage())
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-    @GetMapping("/getProductBySold")
-    public ResponseEntity<ResponseObject> getProductBySold() {
-        try {
-            // Assume productService retrieves all products and returns List<ProductResponse>
-            List<ProductResponse> products = productService.findTop8ByOrderBySoldDesc();
-
-            // Construct success response
-            ResponseObject response = ResponseObject.builder()
-                    .status("Success")
-                    .data(products)
-                    .build();
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            // Handle exception and return error response
-            ResponseObject errorResponse = ResponseObject.builder()
-                    .status("Error")
-                    .message(e.getMessage())
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-    @GetMapping("/getProductByDate")
-    public ResponseEntity<ResponseObject> getProductByDate() {
-        try {
-            // Assume productService retrieves all products and returns List<ProductResponse>
-            List<ProductResponse> products = productService.findTop8ByOrderByLastModifiedDateDesc();
-
-            // Construct success response
-            ResponseObject response = ResponseObject.builder()
-                    .status("Success")
-                    .data(products)
-                    .build();
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            // Handle exception and return error response
-            ResponseObject errorResponse = ResponseObject.builder()
-                    .status("Error")
-                    .message(e.getMessage())
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-    @GetMapping("/profile")
-    @ResponseBody
-    public ResponseEntity<ResponseObject> getDetailUser(HttpServletRequest request) {
-        try {
-            User user = authenticateUser(request);
-
-            Map<String, String> data = new LinkedHashMap<>();
-            data.put("name", user.getName());
-            data.put("email", user.getEmail());
-            data.put("phonenumber", user.getPhoneNumber());
-            data.put("avartarUrl", user.getAvatarUrl());
-            data.put("gender", user.getGender());
-
-            return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").message("Loading data success!").data(data).build());
-        } catch (UserException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to get user information.").build());
-        }
-    }
-    @GetMapping("/product/{productID}")
-    ResponseEntity<ResponseObject> getDetailProduct(@PathVariable("productID")Integer id){
-        try{
-            Product product = productService.getSelectedProduct(id);
-            if(product == null){
-                return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message("Position not found").build(),HttpStatus.OK);
-            }
-            return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("SUCCESS").data(product).build(),HttpStatus.OK);
-
-        }catch (Exception exception){
-            return new ResponseEntity<ResponseObject>(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build(),HttpStatus.OK);
-        }
-    }
-
-    @GetMapping("/product/detail/{productId}")
-    public ResponseEntity<ResponseObject> getProductById(@PathVariable Long productId) {
-        try {
-            ProductResponse product = productService.getProductByIdDetail(productId);
-
-            if (product != null) {
-                ResponseObject response = ResponseObject.builder()
-                        .status("Success")
-                        .data(product)
-                        .build();
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseObject.builder()
-                        .status("Error")
-                        .message("Product not found with ID: " + productId)
-                        .build());
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder()
-                    .status("Error")
-                    .message(e.getMessage())
-                    .build());
-        }
-    }
-
-
-    @GetMapping("/search")
-    public ResponseEntity<ResponseObject> searchProducts(@RequestParam("keyword") String keyword) {
-        try {
-            List<Product> products = productService.searchProducts(keyword);
-            List<Map<String, Object>> productData = getProductData(products);
-
-            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").data(productData).message("Search results").build());
-        } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build());
-        }
-    }
     @GetMapping("/categories/{categoryId}/products")
     public ResponseEntity<ResponseObject> getProductsByCategory(@PathVariable("categoryId") Long categoryId) {
         try {
@@ -512,99 +374,7 @@ public class UserController {
             return new ResponseEntity<>(ResponseObject.builder().status("ERROR").message("Failed to get followed users.").build(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PostMapping("/cart/add")
-    public ResponseEntity<ResponseObject> addToCart(HttpServletRequest request, @RequestBody @Valid AddToCartRequest addToCartRequest) throws UserException {
-        try {
-            // Xác thực người dùng
-            User user = authenticateUser(request);
 
-            System.out.println("đã vào cart");
-            // Lấy hoặc tạo giỏ hàng cho người dùng
-            Cart cart = cartService.getOrCreateCart(user);
-            System.out.println("proId: " + addToCartRequest.getProductId());
-            System.out.println("quantity: " + addToCartRequest.getQuantity());
-
-            // Kiểm tra xem sản phẩm đã có trong giỏ hàng hay chưa
-            List<CartItem> cartItems = cart.getCartItemList();
-            for (CartItem cartItem : cartItems) {
-                if (cartItem.getProduct().getId().equals(addToCartRequest.getProductId())) {
-                    // Sản phẩm đã có trong giỏ hàng, cập nhật số lượng và tổng giá trị
-                    cartItem.setQuantity(cartItem.getQuantity() + addToCartRequest.getQuantity());
-                    cartItem.setSubtotal(cartItem.getSubtotal() + (addToCartRequest.getQuantity() * cartItem.getPrice()));
-                    System.out.println("sản phẩm đã có trong giỏ hàng");
-                    cartService.updateCart(cart);
-                    return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").message("Product quantity updated in cart.").build());
-                }
-            }
-
-            // Sản phẩm chưa có trong giỏ hàng, thêm mới vào giỏ hàng
-            Product product = productService.getProductById(Long.valueOf(addToCartRequest.getProductId()));
-            if (product == null) {
-                return ResponseEntity.badRequest().body(ResponseObject.builder().status("ERROR").message("Product not found.").build());
-            }
-            CartItem newCartItem = new CartItem();
-            newCartItem.setProduct(product);
-            newCartItem.setQuantity(addToCartRequest.getQuantity());
-            newCartItem.setPrice(product.getPromotionalPrice());
-            newCartItem.setSubtotal(product.getPromotionalPrice() * addToCartRequest.getQuantity());
-            newCartItem.setImageUrl(product.getUrl());
-            newCartItem.setCart(cart);
-
-            cartItems.add(newCartItem);
-            cartService.updateCart(cart);
-
-            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").message("Product added to cart.").build());
-        } catch (UserException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to add product to cart.").build());
-        }
-    }
-
-    @GetMapping("/cart/detail")
-    public ResponseEntity<ResponseObject> getCartDetail(HttpServletRequest request) {
-        try {
-            // Xác thực người dùng
-            User user = authenticateUser(request);
-
-            // Lấy giỏ hàng của người dùng
-            Cart cart = cartService.getOrCreateCart(user);
-
-            // Chuyển đổi danh sách CartItem thành CartItemResponse
-            List<CartItemResponse> cartItemResponses = cart.getCartItemList().stream()
-                    .map(cartItem -> new CartItemResponse(
-                            cartItem.getId(),
-                            cartItem.getProduct().getId(),
-                            cartItem.getProduct().getName(),
-                            cartItem.getQuantity(),
-                            cartItem.getPrice(),
-                            cartItem.getSubtotal(),
-                            cartItem.getImageUrl()
-                    ))
-                    .collect(Collectors.toList());
-
-            // Tạo CartResponse
-            CartResponse cartResponse = new CartResponse(
-                    cart.getId(),
-                    cart.getTotalItem(),
-                    cart.getTotalPrice(),
-                    cart.getCreatedDate(),
-                    cart.getLastModifiedDate(),
-                    cartItemResponses
-            );
-
-            ResponseObject response = ResponseObject.builder()
-                    .status("SUCCESS")
-                    .data(cartResponse)
-                    .build();
-
-            return ResponseEntity.ok(response);
-        } catch (UserException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseObject.builder().status("ERROR").message(e.getMessage()).build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseObject.builder().status("ERROR").message("Failed to get cart items.").build());
-        }
-    }
     @PutMapping("/updatePassword")
     public ResponseEntity<?> updatePassword(@RequestBody UserRequest userRequest){
         return ResponseEntity.ok(userService.updatePassword(userRequest));
@@ -666,4 +436,37 @@ public class UserController {
 //
 //        return categoryData;
 //    }
+    @GetMapping("/categories")
+    public ResponseEntity<ResponseObject> getCategories() {
+        try {
+            List<Category> categories = categoryService.getAllCategories();
+            List<Map<String, Object>> categoryData = getCategoryData(categories);
+
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .status("SUCCESS")
+                    .data(categoryData)
+                    .message("Categories retrieved successfully!")
+                    .build());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                    .body(ResponseObject.builder()
+                            .status("ERROR")
+                            .message(exception.getMessage())
+                            .build());
+        }
+    }
+    private List<Map<String, Object>> getCategoryData(List<Category> categories) {
+        List<Map<String, Object>> categoryData = new ArrayList<>();
+
+        for (Category category : categories) {
+            Map<String, Object> categoryInfo = new HashMap<>();
+            categoryInfo.put("id", category.getId());
+            categoryInfo.put("name", category.getName());
+            categoryInfo.put("imageUrl",category.getImage());
+
+            categoryData.add(categoryInfo);
+        }
+
+        return categoryData;
+    }
 }

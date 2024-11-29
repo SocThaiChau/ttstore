@@ -1,5 +1,7 @@
 package com.example.back_end.service.impl;
 
+import com.example.back_end.model.dto.address.AddressDTO;
+import com.example.back_end.model.dto.user.UserDTO;
 import com.example.back_end.model.entity.Address;
 import com.example.back_end.model.entity.Order;
 import com.example.back_end.model.entity.User;
@@ -9,8 +11,11 @@ import com.example.back_end.model.response.OrderResponse;
 import com.example.back_end.repository.AddressRepository;
 import com.example.back_end.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,9 +26,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional
 @Slf4j
 public class AddressService {
+    ModelMapper modelMapper;
     @Autowired
     private AddressRepository addressRepository;
     @Autowired
@@ -52,17 +59,19 @@ public class AddressService {
             return "Error while creating address!!!";
         }
     }
-    public List<Address> findAllAddress(){
+    public List<AddressDTO> findListAddress(){
         try {
             List<Address> addresses = addressRepository.findAll();
-            return addresses;
+            return addresses.stream()
+                    .map(address -> modelMapper.map(address, AddressDTO.class))
+                    .collect(Collectors.toList());
         } catch (Exception ex) {
             throw ex;
         }
     }
 
     @Transactional
-    public List<AddressResponse> getAddressByCurrentUser() {
+    public List<AddressDTO> getAddressByCurrentUser() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             User currentUser = (User) authentication.getPrincipal();
@@ -74,28 +83,13 @@ public class AddressService {
 
             List<Address> addresses = addressRepository.findByAddressUser_Id(userId);
 
-            // Chuyển đổi từ Address sang AddressResponse
             return addresses.stream()
-                    .map(this::convertToAddressResponse)
+                    .map(address -> modelMapper.map(address, AddressDTO.class))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error while fetching addresses for the current user: " + e.getMessage());
         }
-    }
-
-    private AddressResponse convertToAddressResponse(Address address) {
-        return new AddressResponse(
-                address.getId(),
-                address.getFullName(),
-                address.getPhoneNumber(),
-                address.getCity(),
-                address.getDistrict(),
-                address.getWard(),
-                address.getOrderDetail(),
-                address.getIsDefault(),
-                address.getAddressUser().getId().toString()
-        );
     }
 
     public String updateAddress(Long id, AddressRequest addressRequest) {
