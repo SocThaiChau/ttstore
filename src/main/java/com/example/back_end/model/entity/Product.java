@@ -27,7 +27,7 @@ public class Product implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "description")
+    @Column(columnDefinition = "LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String description;
 
     @Column(name = "price")
