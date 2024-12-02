@@ -1,6 +1,7 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.exception.ProductException;
+import com.example.back_end.model.dto.product.ProductDTO;
 import com.example.back_end.model.entity.Image;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.model.entity.User;
@@ -11,7 +12,10 @@ import com.example.back_end.model.response.ReviewResponse;
 import com.example.back_end.repository.ImageRepository;
 import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.service.IproductService;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +25,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public class ProductService implements IproductService {
+    ModelMapper modelMapper;
     @Autowired
     private final ProductRepository productRepository ;
 
@@ -80,6 +86,15 @@ public class ProductService implements IproductService {
         List<Product> products = productRepository.findAll();
         return products.stream()
                 .map(this::mapToProductResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Lấy danh sách Product theo categoryId
+    public List<ProductDTO> getProductsByCategoryId(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+
+        return products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
                 .collect(Collectors.toList());
     }
 

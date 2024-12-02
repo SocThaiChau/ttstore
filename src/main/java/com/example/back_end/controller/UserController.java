@@ -4,36 +4,27 @@ import com.example.back_end.auth.JwtService;
 import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.UnauthorizedException;
 import com.example.back_end.exception.UserException;
-import com.example.back_end.model.entity.*;
-import com.example.back_end.model.mapper.UserMapper;
-import com.example.back_end.model.request.AddToCartRequest;
+import com.example.back_end.model.dto.user.UserDTO;
+import com.example.back_end.model.entity.Category;
+import com.example.back_end.model.entity.Notification;
+import com.example.back_end.model.entity.Product;
+import com.example.back_end.model.entity.User;
 import com.example.back_end.model.request.UserRequest;
-import com.example.back_end.model.response.CartItemResponse;
-import com.example.back_end.model.response.CartResponse;
-import com.example.back_end.model.response.ProductResponse;
-import com.example.back_end.repository.CartRepository;
 import com.example.back_end.repository.CategoryRepository;
-import com.example.back_end.repository.ImageRepository;
 import com.example.back_end.response.ResponseObject;
-import com.example.back_end.service.impl.*;
+import com.example.back_end.service.impl.NotificationService;
+import com.example.back_end.service.impl.ProductService;
+import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.text.SimpleDateFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,25 +37,11 @@ public class UserController {
     @Autowired
     private ProductService productService;
     @Autowired
-    private CartService cartService;
-    @Autowired
     private JwtService jwtService;
-    @Autowired
-    private CartRepository cartRepository;
     @Autowired
     private NotificationService notificationService;
     @Autowired
     private CategoryRepository categoryRepository;
-    private final UserMapper userMapper;
-
-    @Autowired
-    private CategoryService categoryService;
-
-    @Autowired
-    private CartItemService cartItemService;
-
-    @Autowired
-    private ImageRepository imageRepository;
 
     private User authenticateUser(HttpServletRequest request) throws UserException {
         String authHeader = request.getHeader("Authorization");
@@ -352,41 +329,9 @@ public class UserController {
 
     @GetMapping("/getUser/{userId}")
     public ResponseEntity<?> getById(@PathVariable Long userId){
-        User user = userService.getUserById(userId);
-        return ResponseEntity.ok(userMapper.toResponse(user));
+        UserDTO user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/categories")
-    public ResponseEntity<ResponseObject> getCategories() {
-        try {
-            List<Category> categories = categoryService.getAllCategories();
-            List<Map<String, Object>> categoryData = getCategoryData(categories);
 
-            return ResponseEntity.ok().body(ResponseObject.builder()
-                    .status("SUCCESS")
-                    .data(categoryData)
-                    .message("Categories retrieved successfully!")
-                    .build());
-        } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                    .body(ResponseObject.builder()
-                            .status("ERROR")
-                            .message(exception.getMessage())
-                            .build());
-        }
-    }
-    private List<Map<String, Object>> getCategoryData(List<Category> categories) {
-        List<Map<String, Object>> categoryData = new ArrayList<>();
-
-        for (Category category : categories) {
-            Map<String, Object> categoryInfo = new HashMap<>();
-            categoryInfo.put("id", category.getId());
-            categoryInfo.put("name", category.getName());
-            categoryInfo.put("imageUrl",category.getImage());
-
-            categoryData.add(categoryInfo);
-        }
-
-        return categoryData;
-    }
 }

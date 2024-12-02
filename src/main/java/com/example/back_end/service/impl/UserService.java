@@ -79,8 +79,9 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public User getUserById(Long id){
-        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
+    public UserDTO getUserById(Long id){
+        User user = userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
+        return mapToDTO(user);
     }
 
     public String createUser(UserRequest userRequest) {
@@ -143,18 +144,12 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
     public void updateUserPassword(Long id, String password){
-        User oldUser = getUserById(id);
-        if(oldUser == null){
-            throw new NotFoundException("Không tìm thấy người dùng: "+ id);
-        }
+        User oldUser = userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
 //        oldUser.setPassword(new BCryptPasswordEncoder().encode(password));
         oldUser.setPassword(password);
         userRepository.save(oldUser);
     }
 
-//    public User getUserById(Long id){
-//        return userRepository.findById(id).orElseThrow(()-> new NotFoundException("Không tìm thấy người dùng: "+ id));
-//    }
 
     public User getUserById(Integer id) throws UserException {
         return userRepository.findById(Long.valueOf(id)).orElseThrow(()->new UserException("UserNotFound!"));
