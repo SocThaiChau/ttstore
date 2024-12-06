@@ -36,8 +36,6 @@ public class CategoryService {
     }
 
 
-
-
     public Category getCategoryById(Long categoryId) {
         Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
         if (categoryOptional.isPresent()) {
@@ -47,4 +45,13 @@ public class CategoryService {
         }
     }
 
+    public CategoryDTO getCategoryByIdDTO(Long categoryId) {
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        return mapToDTO(category.get());
+    }
+
+    private CategoryDTO mapToDTO(Category category){
+        CategoryDTO dto =modelMapper.map(category, CategoryDTO.class);
+        return dto;
+    }
 }

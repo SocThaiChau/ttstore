@@ -151,8 +151,8 @@ public class ProductService implements IproductService {
         }
 
         // Map reviews
-        if (product.getProductReviewList() != null) {
-            List<ReviewResponse> reviewResponses = product.getProductReviewList().stream()
+        if (product.getReviews() != null) {
+            List<ReviewResponse> reviewResponses = product.getReviews().stream()
                     .map(review -> {
                         ReviewResponse reviewResponse = new ReviewResponse();
                         reviewResponse.setId(review.getId());

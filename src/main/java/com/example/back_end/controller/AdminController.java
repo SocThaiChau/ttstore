@@ -75,13 +75,6 @@ public class AdminController {
         return userService.getUserById(Math.toIntExact(userId));
     }
 
-    @GetMapping("/user")
-    @PreAuthorize("hasRole('VENDOR')")
-    public ResponseEntity<?> getAllUser(){
-        List<User> userList = userService.findAll();
-        return ResponseEntity.ok(userMapper.toUserListDTO(userList));
-    }
-
     @GetMapping("/users")
     @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<?> getAllUsers(){

@@ -59,15 +59,6 @@ public class UserService implements UserDetailsService {
     private final Cloudinary cloudinary;
 
 
-
-    public List<User> findAll() {
-        try {
-            List<User> users = userRepository.findAll();
-            return new ArrayList<>(users);
-        } catch (Exception ex) {
-            throw ex;
-        }
-    }
     public List<UserDTO> findAllUser() {
         try {
             List<User> users = userRepository.findAll();
