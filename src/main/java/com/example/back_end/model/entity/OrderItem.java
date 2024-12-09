@@ -54,7 +54,7 @@ public class OrderItem implements Serializable {
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Review> orderItemReviewList;
+    private List<Review> reviews;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

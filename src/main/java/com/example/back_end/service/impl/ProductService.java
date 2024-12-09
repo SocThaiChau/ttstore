@@ -2,6 +2,7 @@ package com.example.back_end.service.impl;
 
 import com.example.back_end.exception.ProductException;
 import com.example.back_end.model.dto.SalesDTO;
+import com.example.back_end.model.dto.product.ProductDTO;
 import com.example.back_end.model.entity.Image;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.repository.OrderItemRepository;
@@ -14,7 +15,10 @@ import com.example.back_end.model.response.ReviewResponse;
 import com.example.back_end.repository.ImageRepository;
 import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.service.IproductService;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +29,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public class ProductService implements IproductService {
+    ModelMapper modelMapper;
     @Autowired
     private final ProductRepository productRepository ;
 
@@ -130,6 +136,15 @@ public class ProductService implements IproductService {
                 .collect(Collectors.toList());
     }
 
+    // Lấy danh sách Product theo categoryId
+    public List<ProductDTO> getProductsByCategoryId(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+
+        return products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public List<ProductResponse> findTop8ByOrderBySoldDesc() {
         List<Product> products = productRepository.findTop8ByOrderBySoldDesc();
         // Chuyển đổi danh sách Product sang ProductResponse nếu cần thiết
@@ -183,8 +198,8 @@ public class ProductService implements IproductService {
         }
 
         // Map reviews
-        if (product.getProductReviewList() != null) {
-            List<ReviewResponse> reviewResponses = product.getProductReviewList().stream()
+        if (product.getReviews() != null) {
+            List<ReviewResponse> reviewResponses = product.getReviews().stream()
                     .map(review -> {
                         ReviewResponse reviewResponse = new ReviewResponse();
                         reviewResponse.setId(review.getId());

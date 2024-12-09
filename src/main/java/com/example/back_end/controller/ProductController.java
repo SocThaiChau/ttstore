@@ -4,6 +4,7 @@ import com.example.back_end.auth.JwtService;
 import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.UnauthorizedException;
 import com.example.back_end.exception.UserException;
+import com.example.back_end.model.dto.product.ProductDTO;
 import com.example.back_end.model.entity.Category;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.model.entity.User;
@@ -76,6 +77,12 @@ public class ProductController {
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    @GetMapping("/{categoryId}/products")
+    public ResponseEntity<?> getProductsByCategory(@PathVariable("categoryId") Long categoryId) {
+        List<ProductDTO> productDTOS = productService.getProductsByCategoryId(categoryId);
+        return ResponseEntity.ok(productDTOS);
     }
     @GetMapping("/getProductBySold")
     public ResponseEntity<ResponseObject> getProductBySold() {

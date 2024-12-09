@@ -20,13 +20,13 @@ import java.util.List;
 public class OrderItemController {
     @Autowired
     private OrderItemService orderItemService;
-    @GetMapping("/getAll")
+//    @GetMapping("/getAll")
 //    public ResponseEntity<List<OrderItem>> getAllOrders() {
 //        List<OrderItem> orderItems = orderItemService.getAllOrders();
 //        return ResponseEntity.ok(orderItems);
 //    }
-    public ResponseEntity<List<OrderItemResponse>> getAllOrderItems() {
-        List<OrderItemResponse> orderItemResponses = orderItemService.getAllOrderItems();
-        return ResponseEntity.ok(orderItemResponses);
-    }
+//    public ResponseEntity<List<OrderItemResponse>> getAllOrderItems() {
+//        List<OrderItemResponse> orderItemResponses = orderItemService.getAllOrderItems();
+//        return ResponseEntity.ok(orderItemResponses);
+//    }
 }

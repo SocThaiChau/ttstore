@@ -45,7 +45,11 @@ public class SecurityConfig {
                         "/order/**",
                         "/orderItem/**",
                         "/users/**",
-                        "/api/vp/**"
+                        "/api/vp/**",
+                        "/category/**",
+                        "/api/v1/vnpay/**",
+                        "/api/orders/**",
+                        "/api/v1/payment/**"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()
