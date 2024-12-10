@@ -2,6 +2,7 @@ package com.example.back_end.controller;
 
 import com.example.back_end.model.dto.order.OrderDTO;
 import com.example.back_end.model.dto.order.OrderRequest;
+import com.example.back_end.model.dto.orderItem.OrderItemDTO;
 import com.example.back_end.model.dto.orderParent.OrderParentDTO;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.request.OrderItemRequest;
@@ -9,6 +10,7 @@ import com.example.back_end.model.response.CartItemResponse;
 import com.example.back_end.model.response.OrderResponse;
 import com.example.back_end.repository.OrderParentRepository;
 import com.example.back_end.repository.ProductRepository;
+import com.example.back_end.service.impl.OrderItemService;
 import com.example.back_end.service.impl.OrderService;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.VNPAYService;
@@ -41,6 +43,8 @@ public class OrderController {
 
     @Autowired
     private VNPAYService vnpayService;
+    @Autowired
+    private OrderItemService orderItemService;
     @PostMapping("/createOrder")
     public ResponseEntity<OrderParentDTO> createOrder(@RequestBody OrderRequest request, HttpServletRequest httpServletRequest) {
         User user = getUser(); // Xử lý lấy user từ token hoặc session
@@ -89,17 +93,38 @@ public class OrderController {
         return ResponseEntity.ok(orderDTO);
     }
 
-//    @GetMapping("/getAll")
-//    public ResponseEntity<List<OrderResponse>> getAllOrders() {
-//        List<OrderResponse> orderResponses = orderService.getAllOrders();
-//        return ResponseEntity.ok(orderResponses);
-//    }
-//
-//    @GetMapping("/my-orders")
-//    public ResponseEntity<List<OrderResponse>> getOrdersByCurrentUser() {
-//        List<OrderResponse> orders = orderService.getOrdersByCurrentUser();
-//        return ResponseEntity.ok(orders);
-//    }
+    @GetMapping("/getAll")
+    public ResponseEntity<List<OrderParentDTO>> getAllOrders() {
+        List<OrderParentDTO> orderParentDTOS = orderService.getAllOrders();
+        return ResponseEntity.ok(orderParentDTOS);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<OrderParentDTO>> getOrdersParent(@PathVariable Long userId) {
+        List<OrderParentDTO> orders = orderService.getOrdersParent(userId);
+        return ResponseEntity.ok(orders);
+    }
+
+    // Tìm kiếm tất cả order thuộc UserId
+    @GetMapping("/user/{userId}/all-orders")
+    public ResponseEntity<List<OrderDTO>> getOrdersCurrent(@PathVariable Long userId) {
+        List<OrderDTO> orders = orderService.getOrdersCurrent(userId);
+        return ResponseEntity.ok(orders);
+    }
+
+    // Tìm kiếm OrderItem thuộc orderId
+    @GetMapping("/{orderId}/items")
+    public ResponseEntity<List<OrderItemDTO>> getOrderItems(@PathVariable Long orderId) {
+        List<OrderItemDTO> orderItems = orderItemService.getOrderItemsByOrderId(orderId);
+        return ResponseEntity.ok(orderItems);
+    }
+
+    @GetMapping("/my-ordered")
+    public ResponseEntity<List<OrderDTO>> getMyOrdered() {
+        User user = getUser();
+        List<OrderDTO> orders = orderService.getMyOrdered(user);
+        return ResponseEntity.ok(orders);
+    }
 //
 //    @PostMapping("/addOrder")
 //    public ResponseEntity<String> addOrder(@RequestBody OrderRequest orderRequest) {

@@ -1,9 +1,12 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.model.entity.OrderParent;
+import com.example.back_end.repository.OrderParentRepository;
 import com.example.back_end.service.impl.VNPAYService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,8 @@ public class VNPayController {
     @Autowired
     private VNPAYService vnPayService;
 
+    @Autowired
+    private OrderParentRepository orderParentRepository;
     @GetMapping({"", "/"})
     public String home(){
         return "index";
@@ -39,12 +44,23 @@ public class VNPayController {
     public String paymentCompleted(HttpServletRequest request, Model model){
         int paymentStatus =vnPayService.orderReturn(request);
 
-        String orderInfo = request.getParameter("vnp_OrderInfo");
+        if (paymentStatus == 1) {
+            // Thành công, cập nhật trạng thái đơn hàng
+            String txnRef = request.getParameter("vnp_TxnRef");
+            OrderParent orderParent = orderParentRepository.findById(Long.valueOf(txnRef))
+                    .orElseThrow(() -> new RuntimeException("Order not found"));
+
+            orderParent.setStatus("PAID");
+            orderParent.setIsPaidBefore(true);
+            orderParentRepository.save(orderParent);
+        }
+
+        String orderId = request.getParameter("vnp_TxnRef");
         String paymentTime = request.getParameter("vnp_PayDate");
         String transactionId = request.getParameter("vnp_TransactionNo");
         String totalPrice = request.getParameter("vnp_Amount");
 
-        model.addAttribute("orderId", orderInfo);
+        model.addAttribute("orderId", orderId);
         model.addAttribute("totalPrice", totalPrice);
         model.addAttribute("paymentTime", paymentTime);
         model.addAttribute("transactionId", transactionId);
