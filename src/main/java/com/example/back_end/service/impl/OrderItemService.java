@@ -1,5 +1,6 @@
 package com.example.back_end.service.impl;
 
+import com.example.back_end.model.dto.orderItem.OrderItemDTO;
 import com.example.back_end.model.entity.Order;
 import com.example.back_end.model.entity.OrderItem;
 import com.example.back_end.model.entity.Product;
@@ -7,17 +8,41 @@ import com.example.back_end.model.response.OrderItemResponse;
 import com.example.back_end.model.response.OrderResponse;
 import com.example.back_end.model.response.ProductResponse;
 import com.example.back_end.repository.OrderItemRepository;
+import com.example.back_end.repository.OrderRepository;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class OrderItemService {
+    ModelMapper modelMapper;
     @Autowired
     private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+    public List<OrderItemDTO> getOrderItemsByOrderId(Long orderId) {
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+        return orderItems.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());    }
+
+    private OrderItemDTO mapToDTO(OrderItem orderItem) {
+        return modelMapper.map(orderItem, OrderItemDTO.class);
+    }
+
 
 //    public List<OrderItemResponse> getAllOrderItems() {
 //        List<OrderItem> orderItems = orderItemRepository.findAll();

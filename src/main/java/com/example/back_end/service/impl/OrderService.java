@@ -3,12 +3,14 @@ package com.example.back_end.service.impl;
 import com.example.back_end.model.dto.order.OrderDTO;
 import com.example.back_end.model.dto.order.OrderRequest;
 import com.example.back_end.model.dto.orderItem.OrderItemDTO;
+import com.example.back_end.model.dto.user.UserDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import com.example.back_end.model.dto.orderParent.OrderParentDTO;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class OrderService {
+    ModelMapper modelMapper;
 
     @Autowired
     private OrderParentRepository orderParentRepository;
@@ -56,7 +59,7 @@ public class OrderService {
         orderParent.setUser(user);
         orderParent.setCreatedDate(new Date());
         orderParent.setStatus("PENDING");
-        orderParent.setIsPaidBefore(request.getIsPaidBefore());
+        orderParent.setIsPaidBefore(false);
         orderParent.setPaymentType(request.getPaymentType());
         orderParent.setChildOrders(new ArrayList<>());
 
@@ -94,6 +97,7 @@ public class OrderService {
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrder(order);
                 orderItem.setProduct(product);
+                orderItem.setImageUrl(product.getUrl());
                 orderItem.setQuantity(itemDto.getQuantity());
                 orderItem.setPrice(product.getPrice());
                 orderItem.setSubtotal(product.getPrice() * itemDto.getQuantity());
@@ -128,10 +132,13 @@ public class OrderService {
         // Lưu OrderParent
         orderParentRepository.save(orderParent);
 
-        // Tạo URL thanh toán VNPAY
-        String paymentUrl = vnPayService.createOrder_v2(httpServletRequest, totalOrderParent.intValue(),
-                "Thanh toán đơn hàng " + orderParent.getId(),
-                "http://localhost:8080/api/v1/payment", orderParent.getId().toString());
+        String paymentUrl = "";
+        if (request.getPaymentType().equals("VNPAY")) {
+            // Tạo URL thanh toán VNPAY
+            paymentUrl = vnPayService.createOrder_v2(httpServletRequest, totalOrderParent.intValue(),
+                    "Thanh toan don hang " + orderParent.getId(),
+                    "http://localhost:8080/api/v1/payment", orderParent.getId().toString());
+        }
 
         // Trả về thông tin order + URL thanh toán
         OrderParentDTO response = mapToOrderParentDTO(orderParent);
@@ -217,32 +224,59 @@ public class OrderService {
         dto.setAddressId(order.getAddress().getId());
         return dto;
     }
-//    public List<OrderResponse> getAllOrders() {
-//        List<Order> orders = orderRepository.findAll();
-//        return orders.stream().map(this::convertToOrderResponse).collect(Collectors.toList());
-//    }
 
-//    @Transactional
-//    public List<OrderResponse> getOrdersByCurrentUser() {
-//        try {
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//            User currentUser = (User) authentication.getPrincipal();
-//            Long userId = currentUser.getId();
-//
-//            if (userId == null) {
-//                throw new RuntimeException("User ID is null");
-//            }
-//
-//            List<Order> orders = orderRepository.findByUserId(userId);
-//            return orders.stream()
-//                    .map(this::convertToOrderResponse)
-//                    .collect(Collectors.toList());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("Error while fetching orders for the current user: " + e.getMessage());
-//        }
-//    }
-//
+    public List<OrderParentDTO> getAllOrders() {
+        List<OrderParent> orders = orderParentRepository.findAll();
+        return orders.stream().map(this::mapToOrderParentDTO).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<OrderParentDTO> getOrdersParent(Long userId) {
+        try {
+
+            if (userId == null) {
+                throw new RuntimeException("User ID is null");
+            }
+
+            List<OrderParent> orderParents = getOrderParentsByUserId(userId);
+            return orderParents.stream()
+                    .map(this::mapToOrderParentDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error while fetching orders for the current user: " + e.getMessage());
+        }
+    }
+    //Lấy đơn hàng người dùng hiện tại
+    @Transactional
+    public List<OrderDTO> getOrdersCurrent(Long userId) {
+
+        List<OrderParent> orderParents = getOrderParentsByUserId(userId);
+
+        List<Order> allOrders = new ArrayList<>();
+        for (OrderParent parent : orderParents) {
+            allOrders.addAll(parent.getChildOrders());
+        }
+        return allOrders.stream()
+                .map(this::mapToOrderDTO)
+                .collect(Collectors.toList());
+    }
+    public List<OrderDTO> getMyOrdered(User user) {
+        Long userId = user.getId();
+        List<Order> orderParents = orderRepository.findByStoreId(userId);
+        return orderParents.stream()
+                .map(this::mapToOrderDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<OrderParent> getOrderParentsByUserId(Long userId) {
+        return orderParentRepository.findByUserId(userId);
+    }
+
+    private OrderItemDTO mapToDTO(OrderItem orderItem) {
+        return modelMapper.map(orderItem, OrderItemDTO.class);
+    }
+
 //    private OrderResponse convertToOrderResponse(Order order) {
 //        OrderResponse response = new OrderResponse();
 //        response.setId(order.getId());
