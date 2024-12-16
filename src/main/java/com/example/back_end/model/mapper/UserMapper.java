@@ -1,5 +1,6 @@
 package com.example.back_end.model.mapper;
 
+import com.example.back_end.model.dto.user.UserDTO;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.model.response.UserResponse;
@@ -42,6 +43,27 @@ public interface UserMapper {
     List<UserResponse> toUserListDTO(List<User> users);
 
     User toEntity(UserRequest userRequest);
+    public default UserDTO toUserDTO(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getName(),
+                user.getPassword(),
+                user.getPhoneNumber(),
+                user.getGender(),
+                user.getAddress(),
+                user.getAvatarUrl(),
+                user.getDob(),
+                user.getOtp(),
+                user.getLastModyfiedBy(),
+                user.getOtpCreateTime(),
+                user.getCreateDate(),
+                user.getLastModifiedDate(),
+                null
+        );
+    }
+
 
 }
 

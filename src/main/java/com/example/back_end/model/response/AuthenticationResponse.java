@@ -28,4 +28,5 @@ public class AuthenticationResponse implements Serializable {
     private Role role;
     private UserResponse userResponse;
 
+
 }

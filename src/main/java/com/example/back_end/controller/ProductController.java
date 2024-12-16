@@ -371,7 +371,7 @@ public class ProductController {
     @GetMapping("/products/total-sold")
     public ResponseEntity<Map<String, Long>> getTotalProductQuantity(HttpServletRequest request) throws UserException {
         User user = authenticateUser(request);
-        Long totalSold = productService.getTotalProductSoldByUser(user.getId());
+        Long totalSold = (long) productService.getTotalSoldProductsByUser(user.getId());
         Map<String, Long> response = new HashMap<>();
         response.put("totalSold", totalSold);
         return ResponseEntity.ok(response);
@@ -379,7 +379,7 @@ public class ProductController {
     @GetMapping("/products/revenue")
     public ResponseEntity<Map<String, Double>> getRevenue(HttpServletRequest request) throws UserException {
         User user = authenticateUser(request);
-        Double Revenue = productService.getRevenueByUser(user.getId());
+        Double Revenue = productService.getTotalRevenueByUser(user.getId());
         Map<String, Double> response = new HashMap<>();
         response.put("Revenue", Revenue);
         return ResponseEntity.ok(response);
@@ -387,7 +387,7 @@ public class ProductController {
     @GetMapping("/products/sold")
     public ResponseEntity<Map<String, Long>> getProductQuantity(HttpServletRequest request) throws UserException {
         User user = authenticateUser(request);
-        Long sold = productService.getProductSoldByUser(user.getId());
+        Long sold = (long) productService.getTotalSoldProductsByUser(user.getId());
         Map<String, Long> response = new HashMap<>();
         response.put("Sold", sold);
         return ResponseEntity.ok(response);

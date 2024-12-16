@@ -14,9 +14,8 @@ import lombok.Setter;
 public class CategoryDTO {
 
     private Long id;
-
     private String name;
-
-    private String image;
+    private String image; // Lưu trữ URL hoặc tên tệp đã tải lên
+    private String imageUrl; // URL của ảnh nếu sử dụng từ đường dẫn bên ngoài
 
 }

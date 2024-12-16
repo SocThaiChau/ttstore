@@ -1,6 +1,7 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.auth.JwtService;
+import com.example.back_end.model.entity.Role;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.AuthenticationRequest;
@@ -15,6 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -51,5 +54,4 @@ public class AuthenticationService {
         authenticateResponse.setUserResponse(userResponse);
         return authenticateResponse;
     }
-
 }

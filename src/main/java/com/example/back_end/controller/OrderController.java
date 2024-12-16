@@ -56,27 +56,27 @@ public class OrderController {
     public ResponseEntity<String> handleVnpayReturn(HttpServletRequest request) {
         int result = vnpayService.orderReturn(request);
 
-    @PostMapping("/addOrder")
-    public ResponseEntity<String> addOrder(@RequestBody OrderRequest orderRequest) {
-        try {
-            String result = orderService.addOrder(orderRequest);
-            if (result.equals("Create Order Successfully...")) {
-//                // Cập nhật lại số lượng sản phẩm và số lượng đã bán
-//                for (OrderItemRequest item : orderRequest.getOrderItems()) {
-//                    Product product = productService.getProductById(item.getProduct().getId());
-//                    product.setQuantityAvailable(product.getQuantityAvailable() - item.getQuantity());
-//                    product.setSold(product.getSold() == null ? item.getQuantity() : product.getSold() + item.getQuantity());
-//                    productRepository.save(product);
-//                }
-                return ResponseEntity.ok(result);
-            } else {
-                return ResponseEntity.status(500).body(result);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error while creating order: " + e.getMessage());
-        }
-    }
+//    @PostMapping("/addOrder")
+//    public ResponseEntity<String> addOrder(@RequestBody OrderRequest orderRequest) {
+//        try {
+//            String result = orderService.addOrder(orderRequest);
+//            if (result.equals("Create Order Successfully...")) {
+////                // Cập nhật lại số lượng sản phẩm và số lượng đã bán
+////                for (OrderItemRequest item : orderRequest.getOrderItems()) {
+////                    Product product = productService.getProductById(item.getProduct().getId());
+////                    product.setQuantityAvailable(product.getQuantityAvailable() - item.getQuantity());
+////                    product.setSold(product.getSold() == null ? item.getQuantity() : product.getSold() + item.getQuantity());
+////                    productRepository.save(product);
+////                }
+//                return ResponseEntity.ok(result);
+//            } else {
+//                return ResponseEntity.status(500).body(result);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(500).body("Error while creating order: " + e.getMessage());
+//        }
+//    }
         if (result == 1) {
             // Thành công, cập nhật trạng thái đơn hàng
             String txnRef = request.getParameter("vnp_TxnRef");

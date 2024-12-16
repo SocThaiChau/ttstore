@@ -1,5 +1,6 @@
 package com.example.back_end.repository;
 
+import com.example.back_end.model.dto.category.CategoryDTO;
 import com.example.back_end.model.dto.product.ProductDTO;
 import com.example.back_end.model.entity.Category;
 import com.example.back_end.model.entity.Product;
@@ -17,4 +18,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findById(Long categoryId);
 
     Category findById(long id);
+
 }

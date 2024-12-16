@@ -16,6 +16,7 @@ import com.example.back_end.model.request.ProductRequest;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.model.response.CategoryResponse;
 import com.example.back_end.repository.ProductRepository;
+import com.example.back_end.repository.UserRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
 import com.example.back_end.service.impl.NotificationService;
@@ -50,11 +51,9 @@ public class AdminController {
     private JwtService jwtService;
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private UserRepository userRepository;
 
-//    @GetMapping("/test")
-//    public ResponseEntity<String> login(){
-//        return ResponseEntity.ok("Authentication and Authorization is succedeed");
-//    }
 
     @PostMapping("/users/create")
 //    @PreAuthorize("hasRole('VENDOR')")
@@ -79,11 +78,69 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('VENDOR')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllUsers(){
         List<UserDTO> userList = userService.findAllUser();
         return ResponseEntity.ok(userList);
     }
+    @PutMapping("/users/{id}/update")
+// @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UserRequest userRequest
+    ) {
+        try {
+            // Kiểm tra xem user có tồn tại hay không
+            User existingUser = userRepository.findById(id)
+                    .orElseThrow(() -> new UserException("User not found"));
+
+            // Cập nhật thông tin từ request
+            if (userRequest.getName() != null) existingUser.setName(userRequest.getName());
+            if (userRequest.getEmail() != null) existingUser.setEmail(userRequest.getEmail());
+            if (userRequest.getPhoneNumber() != null) existingUser.setPhoneNumber(userRequest.getPhoneNumber());
+            if (userRequest.getGender() != null) existingUser.setGender(userRequest.getGender());
+            if (userRequest.getAddress() != null) existingUser.setAddress(userRequest.getAddress());
+            if (userRequest.getDob() != null) existingUser.setDob(userRequest.getDob());
+
+            // Lưu các thay đổi vào cơ sở dữ liệu
+            existingUser.setLastModifiedDate(new Date());
+            userRepository.save(existingUser);
+
+            // Chuyển đổi sang UserDTO để trả về phản hồi
+            UserDTO updatedUserDTO = userMapper.toUserDTO(existingUser);
+            return ResponseEntity.ok(new ResponseObject("success", "User updated successfully", updatedUserDTO));
+
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject("error", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseObject("error", "An unexpected error occurred", null));
+        }
+    }
+    @GetMapping("/users/{id}")
+// @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getUserDetails(@PathVariable Long id) {
+        try {
+            // Tìm kiếm người dùng theo ID
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new UserException("User not found"));
+
+            // Chuyển đổi entity sang DTO
+            UserDTO userDTO = userMapper.toUserDTO(user);
+
+            // Trả về phản hồi
+            return ResponseEntity.ok(new ResponseObject("success", "User details retrieved successfully", userDTO));
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject("error", e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseObject("error", "An unexpected error occurred", null));
+        }
+    }
+
+
 
     @GetMapping("/category/{id}")
     //@PreAuthorize("hasRole('VENDOR')")

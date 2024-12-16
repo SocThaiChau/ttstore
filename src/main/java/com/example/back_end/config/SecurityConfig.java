@@ -28,7 +28,8 @@ public class SecurityConfig {
         http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeRequests()
                 .requestMatchers(HttpMethod.GET, "/admin/user,",
-                        "/admin/users,",
+
+
                         "/admin/product/**").permitAll() // Allow access to /admin/user without authentication
 
                 .requestMatchers(HttpMethod.GET, "/admin/user", "/users/checkPassword").permitAll() // Allow access to /admin/user without authentication origin/dev
@@ -49,7 +50,9 @@ public class SecurityConfig {
                         "/category/**",
                         "/api/v1/vnpay/**",
                         "/api/orders/**",
-                        "/api/v1/payment/**"
+                        "/api/v1/payment/**",
+                        "/admin/users/**"
+
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()
