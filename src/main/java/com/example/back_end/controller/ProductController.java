@@ -10,6 +10,7 @@ import com.example.back_end.model.entity.Product;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.ProductRequest;
+import com.example.back_end.model.response.ProducListResponse;
 import com.example.back_end.model.response.ProductResponse;
 import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.response.ResponseObject;
@@ -211,17 +212,29 @@ public class ProductController {
         return productData;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<ResponseObject> searchProducts(@RequestParam("keyword") String keyword) {
-        try {
-            List<Product> products = productService.searchProducts(keyword);
-            List<Map<String, Object>> productData = getProductData(products);
-
-            return ResponseEntity.ok().body(ResponseObject.builder().status("SUCCESS").data(productData).message("Search results").build());
-        } catch (Exception exception) {
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(ResponseObject.builder().status("ERROR").message(exception.getMessage()).build());
+    @GetMapping("product/search")
+    public ProducListResponse searchProducts(@RequestParam("keyword") String keyword) {
+        // Kiểm tra nếu từ khóa trống
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập từ khóa tìm kiếm."); // Hoặc có thể trả về thông báo lỗi tùy theo yêu cầu
         }
+
+        System.out.println("Tìm kiếm với từ khóa: " + keyword); // Từ khóa nhận được là gì?
+
+        // Tiến hành tìm kiếm sản phẩm
+        List<ProductResponse> productList = productService.search(keyword);
+
+        ProducListResponse response = new ProducListResponse();
+
+        if (productList.isEmpty()) {
+            response.setMessage("Không có sản phẩm nào khớp với từ khóa: " + keyword);
+        } else {
+            response.setData(productList);
+        }
+
+        return response;
     }
+
 
     @PostMapping("/product/create")
     public ResponseEntity<ResponseObject> createProduct(@RequestBody @Valid ProductRequest productRequest, HttpServletRequest request) throws UserException {

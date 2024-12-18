@@ -77,6 +77,33 @@ public class ProductService implements IproductService {
         List<Product> products = productRepository.findByKeyword(keyword);
         return products;
     }
+    public List<ProductResponse> search(String keyword) {
+        List<Product> productList = productRepository.findByKeyword(keyword);
+
+        // Chuyển đổi từ List<Product> thành List<ProductResponse>
+        List<ProductResponse> productResponseList = new ArrayList<>();
+
+        for (Product product : productList) {
+            ProductResponse productResponse = convertToProductResponse(product);
+            productResponseList.add(productResponse);
+        }
+
+        return productResponseList;
+    }
+
+    private ProductResponse convertToProductResponse(Product product) {
+        ProductResponse response = new ProductResponse();
+        response.setId(product.getId());
+        response.setName(product.getName());
+        response.setPrice(product.getPrice());
+        response.setPromotionalPrice(product.getPromotionalPrice());
+        response.setUrl(product.getUrl());
+        response.setSold(product.getSold());
+        response.setRating(product.getRating());
+        // ... (chuyển các thuộc tính khác nếu cần)
+        return response;
+    }
+
     public Product createProduct(Product product){return productRepository.save(product);}
     // In ProductService
 
