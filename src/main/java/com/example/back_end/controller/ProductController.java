@@ -8,14 +8,12 @@ import com.example.back_end.model.dto.product.ProductDTO;
 import com.example.back_end.model.entity.Category;
 import com.example.back_end.model.entity.Product;
 import com.example.back_end.model.entity.User;
-import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.ProductRequest;
+//import com.example.back_end.model.response.ProducListResponse;
 import com.example.back_end.model.response.ProducListResponse;
 import com.example.back_end.model.response.ProductResponse;
-import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
-import com.example.back_end.service.impl.NotificationService;
 import com.example.back_end.service.impl.ProductService;
 import com.example.back_end.service.impl.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -211,28 +209,28 @@ public class ProductController {
         return productData;
     }
 
-    @GetMapping("product/search")
-    public ProducListResponse searchProducts(@RequestParam("keyword") String keyword) {
-        // Kiểm tra nếu từ khóa trống
-        if (keyword == null || keyword.trim().isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng nhập từ khóa tìm kiếm."); // Hoặc có thể trả về thông báo lỗi tùy theo yêu cầu
-        }
-
-        System.out.println("Tìm kiếm với từ khóa: " + keyword); // Từ khóa nhận được là gì?
-
-        // Tiến hành tìm kiếm sản phẩm
-        List<ProductResponse> productList = productService.search(keyword);
-
-        ProducListResponse response = new ProducListResponse();
-
-        if (productList.isEmpty()) {
-            response.setMessage("Không có sản phẩm nào khớp với từ khóa: " + keyword);
-        } else {
-            response.setData(productList);
-        }
-
-        return response;
-    }
+//    @GetMapping("product/search")
+//    public ProducListResponse searchProducts(@RequestParam("keyword") String keyword) {
+//        // Kiểm tra nếu từ khóa trống
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            throw new IllegalArgumentException("Vui lòng nhập từ khóa tìm kiếm."); // Hoặc có thể trả về thông báo lỗi tùy theo yêu cầu
+//        }
+//
+//        System.out.println("Tìm kiếm với từ khóa: " + keyword); // Từ khóa nhận được là gì?
+//
+//        // Tiến hành tìm kiếm sản phẩm
+//        List<ProductResponse> productList = productService.search(keyword);
+//
+//        ProducListResponse response = new ProducListResponse();
+//
+//        if (productList.isEmpty()) {
+//            response.setMessage("Không có sản phẩm nào khớp với từ khóa: " + keyword);
+//        } else {
+//            response.setData(productList);
+//        }
+//
+//        return response;
+//    }
 
     @GetMapping("/getAllLatestProducts")
     public ResponseEntity<?> getAllLatestProducts() {
@@ -429,5 +427,28 @@ public class ProductController {
         Map<String, Long> response = new HashMap<>();
         response.put("Sold", sold);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("product/search")
+    public ProducListResponse searchProducts(@RequestParam("keyword") String keyword) {
+        // Kiểm tra nếu từ khóa trống
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng nhập từ khóa tìm kiếm."); // Hoặc có thể trả về thông báo lỗi tùy theo yêu cầu
+        }
+
+        System.out.println("Tìm kiếm với từ khóa: " + keyword); // Từ khóa nhận được là gì?
+
+        // Tiến hành tìm kiếm sản phẩm
+        List<ProductResponse> productList = productService.search(keyword);
+
+        ProducListResponse response = new ProducListResponse();
+
+        if (productList.isEmpty()) {
+            response.setMessage("Không có sản phẩm nào khớp với từ khóa: " + keyword);
+        } else {
+            response.setData(productList);
+        }
+
+        return response;
     }
 }
