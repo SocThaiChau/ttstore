@@ -1,6 +1,7 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.auth.JwtService;
+import com.example.back_end.model.dto.user.UserDTO;
 import com.example.back_end.model.entity.Role;
 import com.example.back_end.model.entity.User;
 import com.example.back_end.model.mapper.UserMapper;
@@ -50,8 +51,7 @@ public class AuthenticationService {
         authenticateResponse.setPhoneNumber(user.getPhoneNumber());
         authenticateResponse.setRole(user.getRole());
 
-        UserResponse userResponse = userMapper.toResponse(user);
-        authenticateResponse.setUserResponse(userResponse);
+        authenticateResponse.setUserDTO(userMapper.toUserDTO(user));
         return authenticateResponse;
     }
 }
