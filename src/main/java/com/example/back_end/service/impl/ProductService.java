@@ -77,6 +77,19 @@ public class ProductService implements IproductService {
         List<Product> products = productRepository.findByKeyword(keyword);
         return products;
     }
+    public List<ProductResponse> getAllMyProducts(Long id) {
+        List<Product> products = productRepository.findByUserId(id);
+        return products.stream()
+                .map(this::mapToProductResponse)
+                .collect(Collectors.toList());
+    }
+    public List<ProductDTO> getAllLatestProducts() {
+        List<Product> products = productRepository.findAllByOrderByCreatedDateDesc();
+
+        return products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .collect(Collectors.toList());
+    }
     public List<ProductResponse> search(String keyword) {
         List<Product> productList = productRepository.findByKeyword(keyword);
 

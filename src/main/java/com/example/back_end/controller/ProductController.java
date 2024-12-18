@@ -79,7 +79,6 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-
     @GetMapping("/{categoryId}/products")
     public ResponseEntity<?> getProductsByCategory(@PathVariable("categoryId") Long categoryId) {
         List<ProductDTO> productDTOS = productService.getProductsByCategoryId(categoryId);
@@ -235,7 +234,11 @@ public class ProductController {
         return response;
     }
 
-
+    @GetMapping("/getAllLatestProducts")
+    public ResponseEntity<?> getAllLatestProducts() {
+        List<ProductDTO> productDTOS = productService.getAllLatestProducts();
+        return ResponseEntity.ok(productDTOS);
+    }
     @PostMapping("/product/create")
     public ResponseEntity<ResponseObject> createProduct(@RequestBody @Valid ProductRequest productRequest, HttpServletRequest request) throws UserException {
         try {
@@ -372,7 +375,29 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/getAllMyProducts")
+    public ResponseEntity<ResponseObject> getAllMyProducts(HttpServletRequest request) {
+        try {
+            User user = authenticateUser(request);
+            // Assume productService retrieves all products and returns List<ProductResponse>
+            List<ProductResponse> products = productService.getAllMyProducts(user.getId());
 
+            // Construct success response
+            ResponseObject response = ResponseObject.builder()
+                    .status("Success")
+                    .data(products)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Handle exception and return error response
+            ResponseObject errorResponse = ResponseObject.builder()
+                    .status("Error")
+                    .message(e.getMessage())
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
     @GetMapping("/products/total-revenue")
     public ResponseEntity<Map<String, Double>> getTotalRevenue(HttpServletRequest request) throws UserException {
         User user = authenticateUser(request);

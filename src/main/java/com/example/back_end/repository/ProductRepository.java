@@ -30,4 +30,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             "FROM Product p WHERE p.user.id = :userId GROUP BY p.name")
     List<Object[]> getSalesByUser(@Param("userId") Long userId);
 
+    List<Product> findAllByOrderByCreatedDateDesc();
 }

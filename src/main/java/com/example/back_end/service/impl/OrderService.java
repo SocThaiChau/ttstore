@@ -105,7 +105,13 @@ public class OrderService {
                 orderItems.add(orderItem);
 
                 totalOrder += orderItem.getSubtotal();
-
+                // Giảm số lượng sản phẩm
+                if (product.getQuantityAvailable() < itemDto.getQuantity()) {
+                    throw new RuntimeException("Not enough stock for product: " + product.getName());
+                }
+                product.setQuantityAvailable(product.getQuantityAvailable() - itemDto.getQuantity());
+                product.setSold(product.getSold() + itemDto.getQuantity());
+                productRepository.save(product); // Lưu thay đổi số lượng sản phẩm
                 // Thêm productId vào danh sách đã đặt hàng
                 orderedProductIds.add(product.getId());
             }
@@ -275,6 +281,17 @@ public class OrderService {
 
     private OrderItemDTO mapToDTO(OrderItem orderItem) {
         return modelMapper.map(orderItem, OrderItemDTO.class);
+    }
+
+    public List<OrderDTO> getStatusOrders(String status) {
+        List<Order> orders = orderRepository.findByStatus(status);
+        return orders.stream().map(this::mapToOrderDTO).collect(Collectors.toList());
+
+    }
+
+    public List<OrderDTO> getOrdersByUserAndStatus(Long userId, String status) {
+        List<Order> orders = orderRepository.findByOrderParent_User_IdAndStatus(userId, status);
+        return orders.stream().map(this::mapToOrderDTO).collect(Collectors.toList());
     }
 
 //    private OrderResponse convertToOrderResponse(Order order) {

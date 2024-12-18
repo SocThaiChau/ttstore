@@ -146,6 +146,17 @@ public class OrderController {
         List<OrderDTO> orders = orderService.getMyOrdered(user);
         return ResponseEntity.ok(orders);
     }
+    @GetMapping("/order/status")
+    public ResponseEntity<List<OrderDTO>> getPendingOrders(@RequestParam("status") String status) {
+        List<OrderDTO> orders = orderService.getStatusOrders(status);
+        return ResponseEntity.ok(orders);
+    }
+    @GetMapping("/myOrder/status")
+    public ResponseEntity<List<OrderDTO>> getOrdersByUserAndStatus(@RequestParam("status") String status) {
+        Long userId = getUser().getId();
+        List<OrderDTO> orders = orderService.getOrdersByUserAndStatus(userId, status);
+        return ResponseEntity.ok(orders);
+    }
 //
 //    @PostMapping("/addOrder")
 //    public ResponseEntity<String> addOrder(@RequestBody OrderRequest orderRequest) {

@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -28,7 +29,7 @@ public class CategoryController {
     private CategoryService categoryService;
     @Autowired
     private CategoryRepository categoryRepository;
-    @GetMapping("/getAll")
+    @GetMapping("/getAllAdmin")
     public ResponseEntity<?> getCategories(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "7") int size) {
@@ -50,7 +51,6 @@ public class CategoryController {
         CategoryDTO categories = categoryService.getCategoryByIdDTO(id);
         return ResponseEntity.ok(categories);
     }
-
 
     @PostMapping("/addCategory")
     public ResponseEntity<?> addCategory(@RequestBody CategoryRequest categoryRequest) {
@@ -119,6 +119,7 @@ public class CategoryController {
     }
 
 
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         try {
@@ -130,6 +131,11 @@ public class CategoryController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getCategories() {
+        List<CategoryDTO> categories = categoryService.getAllCategories();
+        return ResponseEntity.ok(categories);
     }
 
 }
