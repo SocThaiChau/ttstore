@@ -171,6 +171,13 @@ public class ProductService implements IproductService {
                 .map(product -> modelMapper.map(product, ProductDTO.class))
                 .collect(Collectors.toList());
     }
+    public List<ProductDTO> getFavoriteProducts(User user){
+
+        List<Product> products = user.getFavoriteProducts();
+        return products.stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .collect(Collectors.toList());
+    }
 
     public List<ProductResponse> findTop8ByOrderBySoldDesc() {
         List<Product> products = productRepository.findTop8ByOrderBySoldDesc();

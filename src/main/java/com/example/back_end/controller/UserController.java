@@ -5,6 +5,7 @@ import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.UnauthorizedException;
 import com.example.back_end.exception.UserException;
 import com.example.back_end.model.dto.category.CategoryDTO;
+import com.example.back_end.model.dto.product.ProductDTO;
 import com.example.back_end.model.dto.user.UserDTO;
 import com.example.back_end.model.entity.Category;
 import com.example.back_end.model.entity.Notification;
@@ -268,7 +269,7 @@ public class UserController {
         try {
             User user = authenticateUser(request);
             // Lấy danh sách sản phẩm yêu thích của người dùng
-            List<Product> favoriteProducts = user.getFavoriteProducts();
+            List<ProductDTO> favoriteProducts = productService.getFavoriteProducts(user);
 
             return ResponseEntity.ok(ResponseObject.builder().status("SUCCESS").data(favoriteProducts).build());
         } catch (Exception e) {
