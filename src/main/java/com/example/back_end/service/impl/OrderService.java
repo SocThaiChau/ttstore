@@ -43,7 +43,7 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
-    private ProductService productService;
+    private TransportRepository transportRepository;
     @Autowired
     private CartRepository cartRepository;
 
@@ -208,6 +208,16 @@ public class OrderService {
 
     public OrderDTO updateOrder(String request, Long id){
         Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
+        order.setStatus(request);
+        order.setLastModifiedDate(new Date());
+        return mapToOrderDTO(orderRepository.save(order));
+    }
+
+    //Admin xác nhận đơn hàng, chọn đơn vị giao hàng
+    public OrderDTO confirmOrder(String request, Long id, Long transportId){
+        Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found with ID: " + id));
+        Transport transport = transportRepository.findById(transportId).orElseThrow(() -> new RuntimeException("Transport not found with ID: " + transportId));
+        order.setTransport(transport);
         order.setStatus(request);
         order.setLastModifiedDate(new Date());
         return mapToOrderDTO(orderRepository.save(order));

@@ -9,6 +9,7 @@ import com.example.back_end.exception.UserException;
 import com.example.back_end.model.dto.NotificationDTO;
 import com.example.back_end.model.dto.SalesDTO;
 import com.example.back_end.model.dto.SenderDto;
+import com.example.back_end.model.dto.order.OrderDTO;
 import com.example.back_end.model.dto.user.UserDTO;
 import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
@@ -18,10 +19,7 @@ import com.example.back_end.model.response.CategoryResponse;
 import com.example.back_end.repository.ProductRepository;
 import com.example.back_end.repository.UserRepository;
 import com.example.back_end.response.ResponseObject;
-import com.example.back_end.service.impl.CategoryService;
-import com.example.back_end.service.impl.NotificationService;
-import com.example.back_end.service.impl.ProductService;
-import com.example.back_end.service.impl.UserService;
+import com.example.back_end.service.impl.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,10 +48,14 @@ public class AdminController {
     @Autowired
     private JwtService jwtService;
     @Autowired
+<<<<<<< HEAD
     private CategoryService categoryService;
     @Autowired
     private UserRepository userRepository;
 
+=======
+    private OrderService orderService;
+>>>>>>> a5761a3 (update status order)
 
     @PostMapping("/users/create")
 //    @PreAuthorize("hasRole('VENDOR')")
@@ -78,7 +80,11 @@ public class AdminController {
     }
 
     @GetMapping("/users")
+<<<<<<< HEAD
 //    @PreAuthorize("hasRole('ADMIN')")
+=======
+//    @PreAuthorize("hasRole('VENDOR')")
+>>>>>>> a5761a3 (update status order)
     public ResponseEntity<?> getAllUsers(){
         List<UserDTO> userList = userService.findAllUser();
         return ResponseEntity.ok(userList);
@@ -170,7 +176,20 @@ public class AdminController {
 
         return ResponseEntity.ok(categoryResponse);
     }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/conformOrder/{id}")
+    public ResponseEntity<OrderDTO> confirmOrder(@PathVariable Long id, @RequestParam("transportId") Long transportId) {
+        String status = "CONFIRM";
+        OrderDTO orderDTO = orderService.confirmOrder(status, id, transportId);
+        return ResponseEntity.ok(orderDTO);
+    }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/updateOrder/{id}")
+    public ResponseEntity<OrderDTO> updateOrder(@RequestParam("status") String status, @PathVariable Long id) {
+        OrderDTO orderDTO = orderService.updateOrder(status, id);
+        return ResponseEntity.ok(orderDTO);
+    }
 
 
     @GetMapping("/notifications")

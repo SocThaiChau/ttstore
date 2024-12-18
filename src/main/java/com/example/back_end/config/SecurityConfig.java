@@ -51,8 +51,12 @@ public class SecurityConfig {
                         "/api/v1/vnpay/**",
                         "/api/orders/**",
                         "/api/v1/payment/**",
+<<<<<<< HEAD
                         "/admin/users/**"
 
+=======
+                        "/api/transport/**"
+>>>>>>> a5761a3 (update status order)
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()

@@ -59,4 +59,12 @@ public class Order implements Serializable {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Review> reviews;
+<<<<<<< HEAD
+=======
+
+    @ManyToOne
+    @JoinColumn(name = "transport_id")
+    private Transport transport;
+
+>>>>>>> a5761a3 (update status order)
 }

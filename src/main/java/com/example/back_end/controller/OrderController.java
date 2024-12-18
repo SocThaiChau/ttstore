@@ -100,12 +100,6 @@ public class OrderController {
         return user;
     }
 
-    @PreAuthorize("hasRole('VENDOR')")
-    @PutMapping("/updateOrder/{id}")
-    public ResponseEntity<OrderDTO> updateOrder(@RequestParam("status") String status, @PathVariable Long id) {
-        OrderDTO orderDTO = orderService.updateOrder(status, id);
-        return ResponseEntity.ok(orderDTO);
-    }
 
     @PutMapping("/cancelOrder/{id}")
     public ResponseEntity<OrderDTO> cancelOrder(@PathVariable Long id) {
