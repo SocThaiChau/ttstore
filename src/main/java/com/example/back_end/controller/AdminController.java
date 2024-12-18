@@ -95,7 +95,7 @@ public class AdminController {
     }
 
     @PutMapping("/users/{id}/update")
-// @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UserRequest userRequest
