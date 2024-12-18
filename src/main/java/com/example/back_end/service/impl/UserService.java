@@ -9,6 +9,7 @@ import com.example.back_end.model.entity.*;
 import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.UserRequest;
 import com.example.back_end.model.response.CategoryResponse;
+import com.example.back_end.model.response.UserResponse;
 import com.example.back_end.repository.*;
 import jakarta.transaction.Transactional;
 import jdk.jshell.spi.ExecutionControl;
@@ -75,6 +76,12 @@ public class UserService implements UserDetailsService {
         return mapToDTO(user);
     }
 
+    public List<UserDTO> findAllUsersSortedByCreateDate() {
+        List<User> users = userRepository.findAllSortedByCreateDateDesc();
+        return users.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
     public String createUser(UserRequest userRequest) {
         try {
             User oldUser = userRepository.findByEmail(userRequest.getEmail()).orElse(null);

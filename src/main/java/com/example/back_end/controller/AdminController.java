@@ -83,6 +83,17 @@ public class AdminController {
         List<UserDTO> userList = userService.findAllUser();
         return ResponseEntity.ok(userList);
     }
+    @GetMapping("/users/sorted")
+    public ResponseEntity<?> getAllUsersSortedByCreateDate() {
+        try {
+            List<UserDTO> sortedUsers = userService.findAllUsersSortedByCreateDate();
+            return ResponseEntity.ok(sortedUsers);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi lấy danh sách người dùng: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/users/{id}/update")
 // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateUser(

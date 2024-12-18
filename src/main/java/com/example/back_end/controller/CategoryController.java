@@ -1,24 +1,22 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.exception.NotFoundException;
 import com.example.back_end.model.dto.category.CategoryDTO;
+import com.example.back_end.model.request.CategoryRequest;
 import com.example.back_end.model.response.CategoryResponse;
+import com.example.back_end.repository.CategoryRepository;
+import com.example.back_end.response.ResponseObject;
 import com.example.back_end.service.impl.CategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -28,8 +26,8 @@ public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
-    private final String uploadDir = "uploads/categories/";
-
+    @Autowired
+    private CategoryRepository categoryRepository;
     @GetMapping("/getAll")
     public ResponseEntity<?> getCategories(
             @RequestParam(defaultValue = "0") int page,
@@ -53,37 +51,85 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
+
     @PostMapping("/addCategory")
-    public ResponseEntity<?> addCategory(
-            @RequestParam("name") String name,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-            @RequestParam(value = "imageUrl", required = false) String imageUrl) {
+    public ResponseEntity<?> addCategory(@RequestBody CategoryRequest categoryRequest) {
         try {
-            if (imageFile != null && !imageFile.isEmpty()) {
-                saveFile(imageFile);  // Lưu tệp vào thư mục
+            // Kiểm tra dữ liệu hợp lệ
+            if (categoryRequest.getName() == null || categoryRequest.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("Name is required");
             }
-            CategoryDTO createdCategory = categoryService.addCategory(name, imageFile, imageUrl);
+            if (categoryRequest.getImage() == null || categoryRequest.getImage().trim().isEmpty()) {
+                throw new IllegalArgumentException("Image URL is required");
+            }
+
+            // Chuyển tiếp dữ liệu tới service để tạo category
+            CategoryDTO createdCategory = categoryService.addCategory(
+                    categoryRequest.getName(),
+                    categoryRequest.getImage()
+            );
             return ResponseEntity.ok(createdCategory);
+
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("Lỗi khi xử lý tệp: " + e.getMessage());
         }
     }
-    private void saveFile(MultipartFile imageFile) throws IOException {
-        // Đảm bảo thư mục tồn tại
-        File uploadDir = new File("D:/TLCN/ttstore/uploads/categories");
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs(); // Tạo thư mục nếu chưa có
+    @PutMapping("/updateCategory/{id}")
+    public ResponseEntity<?> updateCategory(
+            @PathVariable Long id,
+            @RequestBody @Valid CategoryRequest categoryRequest) {
+        try {
+            // Gửi thông tin cập nhật đến service
+            CategoryDTO updatedCategory = categoryService.updateCategory(
+                    id,
+                    categoryRequest.getName(),
+                    categoryRequest.getImage()
+            );
+
+            // Trả về thông tin của categoryDTO trong phản hồi
+            return ResponseEntity.ok(
+                    ResponseObject.builder()
+                            .status("success")
+                            .message("Cập nhật danh mục thành công")
+                            .data(updatedCategory)
+                            .build()
+            );
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ResponseObject.builder()
+                            .status("error")
+                            .message(e.getMessage())
+                            .data(null)
+                            .build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseObject.builder()
+                            .status("error")
+                            .message(e.getMessage())
+                            .data(null)
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseObject.builder()
+                            .status("error")
+                            .message("An unexpected error occurred")
+                            .data(null)
+                            .build());
         }
+    }
 
-        // Tạo tệp đích từ tên tệp
-        String fileName = imageFile.getOriginalFilename();
-        File destinationFile = new File(uploadDir, fileName);
 
-        // Lưu tệp vào thư mục
-        imageFile.transferTo(destinationFile);
-        System.out.println("Tệp đã được lưu vào: " + destinationFile.getAbsolutePath());
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
+        try {
+            // Lấy thông tin danh mục từ CategoryService
+            CategoryDTO categoryDTO = categoryService.getCategoryByIdDTO(id);
+
+            // Trả về phản hồi JSON chứa thông tin danh mục
+            return ResponseEntity.ok(categoryDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }
