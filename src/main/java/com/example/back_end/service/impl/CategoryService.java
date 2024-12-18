@@ -1,17 +1,11 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.auth.JwtService;
-import com.example.back_end.config.ExtractUser;
 import com.example.back_end.exception.NotFoundException;
-import com.example.back_end.exception.UnauthorizedException;
-import com.example.back_end.exception.UserException;
 import com.example.back_end.model.dto.category.CategoryDTO;
 import com.example.back_end.model.entity.Category;
-import com.example.back_end.model.entity.User;
-import com.example.back_end.model.mapper.CategoryMapper;
 import com.example.back_end.model.response.CategoryResponse;
 import com.example.back_end.repository.CategoryRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,10 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
