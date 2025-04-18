@@ -87,4 +87,18 @@ public class JwtService {
 //                .withExpiresAt(new Date(System.currentTimeMillis() + 50*60*1000))
 //                .sign(algorithm);
 //    }
+
+    public String generatePasswordResetToken(String email){
+        long expiration = System.currentTimeMillis() + 1000 * 60 * 60;
+        Date expirationDate = new Date(expiration);
+        return Jwts.builder()
+                .setExpiration(expirationDate)
+                .setSubject(email)
+                .signWith(getSigninKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean isValidPasswordResetToken(String token){
+        return !isTokenExpired(token);
+    }
 }

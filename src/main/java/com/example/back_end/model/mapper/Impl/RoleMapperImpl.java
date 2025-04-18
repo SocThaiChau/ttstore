@@ -21,7 +21,7 @@ public class RoleMapperImpl implements RoleMapper {
 
         userRoleResponse.setRoleId( role.getId() );
         if ( role.getRoles() != null ) {
-            userRoleResponse.setRole( role.getRoles().name() );
+            userRoleResponse.setRoles( role.getRoles().name() );
         }
 
         return userRoleResponse;

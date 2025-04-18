@@ -21,4 +21,9 @@ public class LoginController {
         return ResponseEntity.ok(authenticationService.authenticate(request, req));
     }
 
+    @GetMapping("/test")
+    public ResponseEntity<String> login(){
+        return ResponseEntity.ok("Authentication and Authorization is succedeed");
+    }
+
 }

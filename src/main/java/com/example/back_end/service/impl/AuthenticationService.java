@@ -1,9 +1,13 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.auth.JwtService;
+import com.example.back_end.model.dto.user.UserDTO;
+import com.example.back_end.model.entity.Role;
 import com.example.back_end.model.entity.User;
+import com.example.back_end.model.mapper.UserMapper;
 import com.example.back_end.model.request.AuthenticationRequest;
 import com.example.back_end.model.response.AuthenticationResponse;
+import com.example.back_end.model.response.UserResponse;
 import com.example.back_end.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -14,12 +18,16 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
+
     public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletRequest req){
         HttpSession session = req.getSession(true);
         try{
@@ -29,7 +37,6 @@ public class AuthenticationService {
             );
             authenticationManager.authenticate(token);
             session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-//            System.out.println(SecurityContextHolder.getContext().getAuthentication().getCredentials().toString());
         }catch (AuthenticationException e){
             throw new RuntimeException("Invalid username/password supplied");
         }
@@ -38,9 +45,13 @@ public class AuthenticationService {
         AuthenticationResponse authenticateResponse = new AuthenticationResponse();
         authenticateResponse.setToken(token);
         authenticateResponse.setEmail(user.getEmail());
-//        authenticateResponse.setDob(user.getDob());
-//        authenticateResponse.setGender(user.getGender());
+        authenticateResponse.setId(user.getId());
+        authenticateResponse.setName(user.getName());
+        authenticateResponse.setDob(user.getDob());
+        authenticateResponse.setPhoneNumber(user.getPhoneNumber());
+        authenticateResponse.setRole(user.getRole());
+
+        authenticateResponse.setUserDTO(userMapper.toUserDTO(user));
         return authenticateResponse;
     }
-
 }

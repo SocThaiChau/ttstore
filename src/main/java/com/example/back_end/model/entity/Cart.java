@@ -47,6 +47,21 @@ public class Cart implements Serializable {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<CartItem> cartItemList;
+    @Override
+    public String toString() {
+        String totalItemString = (totalItem != null) ? totalItem.toString() : "N/A";
+        return "Cart{" +
+                "id=" + id +
+                ", totalItem=" + totalItemString +
+                ", totalPrice=" + totalPrice +
+                ", createdDate=" + createdDate +
+                ", lastModifiedDate=" + lastModifiedDate +
+                ", user=" + user +
+                '}';
+    }
 
 
+    public List<CartItem> getItems() {
+        return cartItemList;
+    }
 }
